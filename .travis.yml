@@ -6,24 +6,35 @@ compiler:
   - clang
   - gcc
 
+env:
+  - MPI=mpich
+  - MPI=openmpi
+
+matrix:
+  allow_failures:
+
+branches:
+  only:
+    - master
+
 #workaround for container based packages
 addons:
   apt:
     packages:
-      - python
+      - openmpi
+      - mpich
 
 
 before_install:
   - echo "not using sudo"
 
 install:
-  - git clone https://github.com/YetAnotherMinion/googletest.git
+  - git clone https://github.com/YetAnotherMinion/googletest.git /tmp/googletest
 
 #export some environmental variables
 before_script:
-  - 
 
-script: make -C ./c-misc/DS projects
+script: make -C ./c-misc/DS\ projects
 
 notifications:
   webhooks:
