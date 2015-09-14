@@ -14,7 +14,7 @@ using namespace std;
 //we will never insert into this list
 //simple implementaation is fine
 //afterwards we will walk along and delete every node
-int output_ellipse_moire(short width, short height, string pattern, ofstream & file)
+int output_ellipse_moire(uint16_t width, uint16_t height, string pattern, ofstream & file)
 {
 	//set the border character here
 	const char border = '*';
@@ -30,9 +30,9 @@ int output_ellipse_moire(short width, short height, string pattern, ofstream & f
 		output_buffer[ii] = new char[width+1];
 	}
 	//char output_buffer[height][width+1]; //add room for null terminator
-	for(int i = 0; i < height; i++)
+	for(uint32_t i = 0; i < height; i++)
 	{
-		for(int j =0; j < width; j++)
+		for(uint32_t j =0; j < width; j++)
 		{
 			output_buffer[i][j] = ' ';
 		}
@@ -61,7 +61,7 @@ int output_ellipse_moire(short width, short height, string pattern, ofstream & f
 									(y - y_offset + height)>>1,\
 									(y - y_offset + height)>>1};
 
-		for(char i = 0; i < 4; i++)
+		for(uint32_t i = 0; i < 4; i++)
 		{
 			int x_index = x_quadrants[i];
 			int y_index = y_quadrants[i];
@@ -98,12 +98,12 @@ int output_ellipse_moire(short width, short height, string pattern, ofstream & f
 	// fill in the pattern
 	int crossing_count;
 	int pattern_index = 0;
-	for(int i = 0; i < height; i++)
+	for(uint32_t i = 0; i < height; i++)
 	{
 		crossing_count = 0;
 		bool crossing_flag = false;
 		//the rows
-		for(int j = 0; j < width; j++)
+		for(uint32_t j = 0; j < width; j++)
 		{
 			if (output_buffer[i][j] == first_pass)
 			{
@@ -128,7 +128,7 @@ int output_ellipse_moire(short width, short height, string pattern, ofstream & f
 		}
 	}
 	//print out the output
-	for(int j = 0;j<height;j++)
+	for(uint32_t j = 0;j<height;j++)
 	{
 		//file << output_buffer[j] << endl;
 		//cout << output_buffer[j] << endl;
@@ -140,18 +140,18 @@ int output_ellipse_moire(short width, short height, string pattern, ofstream & f
 	return 0;
 }
 
-int output_right_triangle_moire(int height, string pattern, ofstream & file)
+int output_right_triangle_moire(uint32_t height, string pattern, ofstream & file)
 {
 	char border = '*';
 	size_t ring_length = pattern.length();
 	int pattern_index = 0;
-	for(int i = 0; i < height; i++)
+	for(uint32_t i = 0; i < height; i++)
 	{
 		char *buffer = new char[i+1];
 		buffer[0] = border;
 		buffer[i] = border;
 		buffer[i+1] = '\x0';
-		for(int j = 1;j < i;j++)
+		for(uint32_t j = 1;j < i;j++)
 		{
 			if (i != height-1)
 			{
@@ -171,21 +171,21 @@ int output_right_triangle_moire(int height, string pattern, ofstream & file)
 	return 0;
 }
 
-int output_isosceles_triangle(int height, string pattern, ofstream & file)
+int output_isosceles_triangle(uint32_t height, string pattern, ofstream & file)
 {
 	char border = '*';
 	size_t ring_length = pattern.length();
 	int pattern_index = 0;
-	for(int i = 0; i < height; i++)
+	for(uint32_t i = 0; i < height; i++)
 	{
 		char *buffer = new char[(height + i +1)]; //leave room for the null terminator
-		int left = height-i-1;
-		int right = height+ i -1;
+		uint32_t left = height-i-1;
+		uint32_t right = height+ i -1;
 		//cout << left << "," << right << endl;
 		buffer[right] = border;
 		//cout << height +i << endl;
 		buffer[height + i] = '\x0';
-		for(int j = 0; j < right; j++)
+		for(uint32_t j = 0; j < right; j++)
 		{
 			//cout << j << endl;
 			if(i != height -1)
@@ -209,26 +209,25 @@ int output_isosceles_triangle(int height, string pattern, ofstream & file)
 				buffer[j] = border;
 			}
 		}
-		cout << buffer << endl;
 		file << buffer << endl;
 		delete[] buffer;
 	}	
 	return 0;
 }
 
-int output_square(int height, string pattern, ofstream  &  file)
+int output_square(uint32_t height, string pattern, ofstream & file)
 {
 	char border = '*';
 	//ofstream file(filename.c_str());
 	size_t ring_length = pattern.length();
 	int pattern_index = 0;
-	for(int i = 0; i < height; i++)
+	for(uint32_t i = 0; i < height; i++)
 	{
 		char *buffer = new char[height+1];
 		buffer[height] = '\x0'; //null terminate
 		buffer[height-1] = border;
 		buffer[0] = border;
-		for(int j = 1; j < height-1;j++)
+		for(uint32_t j = 1; j < height-1;j++)
 			{
 			if( i == 0 || i == height - 1)
 			{
@@ -240,7 +239,7 @@ int output_square(int height, string pattern, ofstream  &  file)
 				pattern_index = (pattern_index+1)%ring_length;
 			}
 		}
-		cout << buffer << endl;
+		file << buffer << endl;
 		delete[] buffer;
 	}
 	return 0;
@@ -325,19 +324,18 @@ int main(int argc, char *argv[])
 		//will return NULL if a or b is larger than 0x7FFF
 		unsigned short a = 0x7FFF;
 		unsigned short b = 0x7FFF;
-
-		unsigned short c = 30;
 		EllipsePoint * tail = new EllipsePoint;
 		EllipsePoint * head = calculate_ellipse(a,b,tail);
 		if (head == NULL)
 		{
+			delete tail;
 			return 1;
 		}
 		EllipsePoint_print(tail);
 		EllipsePoint_print(tail->prev);
 		EllipsePoint_print(head);
 		//clean up the ellipse
-
+		delete tail;
 		return 0;
 	}
 }
