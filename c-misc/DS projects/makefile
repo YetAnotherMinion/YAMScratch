@@ -8,7 +8,7 @@ CFLAGS = -Wall -g --pedantic-errors -Wextra -std=c++0x
 #LIST = $(BIN)/hw1
 #LIST = $(BIN)/hw2
 #LIST = $(BIN)/hw3
-LIST = $(BIN)/hw1 $(BIN)/hw2 $(BIN)/hw3 $(BIN)/hw6 
+LIST = $(BIN)/hw1 $(BIN)/hw2 $(BIN)/hw6 
 
 all: $(LIST)
 
@@ -23,8 +23,10 @@ $(BIN)/hw2 : $(SRC)/hw2.cpp \
 			$(SRC)/parser_bowling.cpp
 	$(CXX) $(CFLAGS) -I $(INC) $^ -o $@
 
-$(BIN)/hw3 : $(SRC)/main3.cpp
-	$(CXX) $(CFLAGS) -I $(INC) $< -o $@
+#this requires secret main3 test functions
+#soon will do a clean public implementation
+# $(BIN)/hw3 : $(SRC)/main3.cpp
+# 	$(CXX) $(CFLAGS) -I $(INC) $< -o $@
 
 
 
