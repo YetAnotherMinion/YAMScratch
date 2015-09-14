@@ -6,10 +6,6 @@ compiler:
   - clang
   - gcc
 
-env:
-  - MPI=mpich
-  - MPI=openmpi
-
 matrix:
   allow_failures:
 
@@ -21,8 +17,8 @@ branches:
 addons:
   apt:
     packages:
-      - openmpi
-      - mpich
+      - python
+      - pip
 
 
 before_install:
@@ -33,6 +29,8 @@ install:
 
 #export some environmental variables
 before_script:
+  - mkdir c-misc/DS\ projects/obj
+  - mkdir c-misc/DS\ projects/bin
 
 script: make -C ./c-misc/DS\ projects
 
