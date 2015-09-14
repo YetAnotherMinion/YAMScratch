@@ -2,28 +2,29 @@ BIN = ./bin
 OBJ = ./obj
 SRC = ./src
 INC = ./include
-CFLAGS = -Wall -g --pedantic-errors -Wextra
+CFLAGS = -Wall -g --pedantic-errors -Wextra -std=c++0x
 # $< is the source  $@ is the target
 
 #LIST = $(BIN)/hw1
 #LIST = $(BIN)/hw2
 #LIST = $(BIN)/hw3
-LIST = $(BIN)/hw6
+LIST = $(BIN)/hw1 $(BIN)/hw2 $(BIN)/hw3 $(BIN)/hw6 
 
 all: $(LIST)
 
-$(BIN)/hw1 : ./src/hw1.cpp
-	g++ -g $(INC)ellipse.cpp $< $(CFLAGS) -o $@
+$(BIN)/hw1 : $(SRC)/hw1.cpp \
+			$(SRC)/ellipse.cpp
+	$(CXX) $(CFLAGS) -I $(INC) $^  -o $@ 
 
-HW2_INC = $(INC)/bowling_frame.cpp $(INC)/bowling_player.cpp $(INC)/bowling_game.cpp $(INC)/parser_bowling.cpp
-
-$(BIN)/hw2 : ./src/hw2.cpp
-	g++ $(HW2_INC) $< $(CFLAGS) -o $@
-
-HW3_INC =
+$(BIN)/hw2 : $(SRC)/hw2.cpp \
+			$(SRC)/bowling_frame.cpp \
+			$(SRC)/bowling_player.cpp \
+			$(SRC)/bowling_game.cpp \
+			$(SRC)/parser_bowling.cpp
+	$(CXX) $(CFLAGS) -I $(INC) $^ -o $@
 
 $(BIN)/hw3 : $(SRC)/main3.cpp
-	g++ $(HW3_INC) $< $(CFLAGS) -o $@
+	$(CXX) $(CFLAGS) -I $(INC) $< -o $@
 
 
 
@@ -31,17 +32,16 @@ $(BIN)/hw3 : $(SRC)/main3.cpp
 
 #compile and link with this step
 $(BIN)/hw6 : $(OBJ)/hw6.o $(OBJ)/carcassonne_placeTile.o
-	g++ $(CFLAGS) $^ $(CFLAGS) -o $@
+	$(CXX) $(CFLAGS) $^ $(CFLAGS) -o $@
 
 
-HW6_INC = -I $(INC)/
 #compiles all of the object files here
 $(OBJ)/hw6.o : $(SRC)/hw6.cpp
-	g++ $(CFLAGS) $(HW6_INC) -c $< -o $@
+	$(CXX) $(CFLAGS) -I $(INC) -c $< -o $@
 
 
 $(OBJ)/carcassonne_placeTile.o : $(SRC)/carcassonne_placeTile.cpp
-	g++ $(CFLAGS) $(HW6_INC) -c $< -o $@
+	$(CXX) $(CFLAGS) -I $(INC) -c $< -o $@
 
 clean:
 	$(RM) $(LIST) $(OBJ)/*

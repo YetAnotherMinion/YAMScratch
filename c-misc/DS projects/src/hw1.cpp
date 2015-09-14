@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <string>
 #include <fstream>
+#include <stdint.h>
 
 #include "../include/ellipse.h"
 
@@ -24,8 +25,11 @@ int output_ellipse_moire(short width, short height, string pattern, ofstream & f
 	int x_offset = (width+1)%2;
 	int y_offset = (height+1)%2;
 	//we do not need a 
-
-	char output_buffer[height][width+1]; //add room for null terminator
+	char ** output_buffer = new char*[height];
+	for(uint32_t ii = 0; ii < height; ++ii) {
+		output_buffer[ii] = new char[width+1];
+	}
+	//char output_buffer[height][width+1]; //add room for null terminator
 	for(int i = 0; i < height; i++)
 	{
 		for(int j =0; j < width; j++)
@@ -129,6 +133,10 @@ int output_ellipse_moire(short width, short height, string pattern, ofstream & f
 		//file << output_buffer[j] << endl;
 		//cout << output_buffer[j] << endl;
 	}
+	for(uint32_t ii = 0; ii < height; ++ii) {
+		delete[] output_buffer[ii];
+	}
+	delete[] output_buffer;
 	return 0;
 }
 
@@ -139,7 +147,7 @@ int output_right_triangle_moire(int height, string pattern, ofstream & file)
 	int pattern_index = 0;
 	for(int i = 0; i < height; i++)
 	{
-		char buffer[i+1];
+		char *buffer = new char[i+1];
 		buffer[0] = border;
 		buffer[i] = border;
 		buffer[i+1] = '\x0';
@@ -157,7 +165,9 @@ int output_right_triangle_moire(int height, string pattern, ofstream & file)
 		}
 		cout << buffer << endl;
 		file << buffer << endl;
+		delete[] buffer;
 	}
+	
 	return 0;
 }
 
@@ -168,7 +178,7 @@ int output_isosceles_triangle(int height, string pattern, ofstream & file)
 	int pattern_index = 0;
 	for(int i = 0; i < height; i++)
 	{
-		char buffer[(height + i +1)];//leave room for the null terminator
+		char *buffer = new char[(height + i +1)]; //leave room for the null terminator
 		int left = height-i-1;
 		int right = height+ i -1;
 		//cout << left << "," << right << endl;
@@ -201,6 +211,7 @@ int output_isosceles_triangle(int height, string pattern, ofstream & file)
 		}
 		cout << buffer << endl;
 		file << buffer << endl;
+		delete[] buffer;
 	}	
 	return 0;
 }
@@ -213,7 +224,7 @@ int output_square(int height, string pattern, ofstream  &  file)
 	int pattern_index = 0;
 	for(int i = 0; i < height; i++)
 	{
-		char buffer[height+1];
+		char *buffer = new char[height+1];
 		buffer[height] = '\x0'; //null terminate
 		buffer[height-1] = border;
 		buffer[0] = border;
@@ -230,6 +241,7 @@ int output_square(int height, string pattern, ofstream  &  file)
 			}
 		}
 		cout << buffer << endl;
+		delete[] buffer;
 	}
 	return 0;
 }
