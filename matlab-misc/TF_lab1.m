@@ -53,32 +53,58 @@ assert(shouldBeTrue == true)
 Reynolds = rho * Velocity * experiment1.pipe_inner_dia(indx) / mu;
 
 %bind a constant to simplify expression below
-
+K1= A_orifice * sqrt(2/(rho * (1-B^4)));
 %compute the sensitvities of the discharge coefficients to the measured variable
-%uses precomputed values for pressure rate
-%note that we add the uncertainities of the two pressure measurements
-%to create a simpler expression for overall uncertainity
-
-dC_0dP = @(Q,P)( ((Q)/(A_orifice * sqrt(2/(rho*(1-B^4))))) * -0.5 * P^(-3/2) );
-
+%uses precomputed values for volumeetric flow rate
+dC_0dP = @(Q,P)( ((Q)/(K1)) * -0.5 * P^(-3/2) );
 %sensitivity with respect to mass
-dC_0dm = @(M,T,P)( 1 / (T * A_orifice * sqrt((2*P)/(rho*(1-B^4)))) );
-
+dC_0dm = @(M,T,P)( 1 / (T * sqrt(P) * K1) );
 %sensitivity with respect to time
-dC_0dt = @(M,T,P)( -M  / (T^2 * A_orifice * sqrt((2*P)/(rho*(1-B^4)))) );
+dC_0dt = @(M,T,P)( -M  / (T^2 * sqrt(P) * K1));
+
+%%Uncertainities in Reynolds number
+%bind a constant to simplify calcs
+[shouldBeTrue, indx] = ismember('one_copper', experiment1.pipe_configuration);
+assert(shouldBeTrue == true)
+K2 = experiment1.pipe_inner_dia(indx) / (mu * A_orifice);
+%sensitivity with respect to mass
+dRdm = @(M,T)( K2 / T );
+%sensitivity with respect to time
+dRdt = @(M,T)( -1 * K2 * M/ T^2 );
 
 part1_fig = figure;
 semilogx(Reynolds, C_0, 'kd');
 xlabel('Reynolds numbers');
 ylabel('Discharge Coefficient')
-%errorbars(x)
 
 mass_uncertainity = 0.05; %accurate to first decimal place
 time_uncertainity = 0.05; %accurate to first decimal place
+%note that we add the uncertainities of the two pressure measurements
+%to create a simpler expression for overall uncertainity
 pressure_uncertainity = 2 * 0.05; %combining uncertainities of both pressure measurements
+
+% arrayfun(dC_0dP, Q_actual, Delta_p)
+% arrayfun(dC_0dm, Mass, Time, Delta_p)
+% arrayfun(dC_0dt, Mass, Time, Delta_p)
 
 error_C_0 = sqrt( (arrayfun(dC_0dP, Q_actual, Delta_p) * pressure_uncertainity).^2 + ...
 					(arrayfun(dC_0dm, Mass, Time, Delta_p) * mass_uncertainity).^2 + ...
 					(arrayfun(dC_0dt, Mass, Time, Delta_p) * time_uncertainity).^2)
+
+error_Reynolds = sqrt( (arrayfun(dRdm, Mass, Time) * mass_uncertainity).^2 + ...
+						(arrayfun(dRdt, Mass, Time) * time_uncertainity).^2 )
 hold on
-errorbar(Reynolds, C_0, error_C_0)
+%plot the error bars manually
+for tmp_indx = 1:length(Reynolds)
+	%vertical bars
+	tmp_x = [Reynolds(tmp_indx), Reynolds(tmp_indx)];
+	tmp_y = [C_0(tmp_indx) - error_C_0(tmp_indx), C_0(tmp_indx) + error_C_0(tmp_indx) ];
+	plot(tmp_x, tmp_y, 'k-')
+	hold on
+	%hortizontal bars
+	tmp_x = [Reynolds(tmp_indx) - error_Reynolds(tmp_indx), Reynolds(tmp_indx) + error_Reynolds(tmp_indx)];
+	tmp_y = [C_0(tmp_indx), C_0(tmp_indx) ];
+	plot(tmp_x, tmp_y, 'k-')
+end
+
+%errorbar(Reynolds, C_0, error_C_0)
