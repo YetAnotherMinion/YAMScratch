@@ -44,7 +44,7 @@ Q_ideal = A_orifice * sqrt((2 * Delta_p)./(rho*(1-B^4)));
 Q_actual = M_dot / rho;
 
 %note the C_0 should be a vector
-C_0 = Q_actual ./ Q_ideal
+C_0 = Q_actual ./ Q_ideal;
 
 Velocity = Q_actual ./ A_orifice;
 
@@ -58,9 +58,9 @@ K1= A_orifice * sqrt(2/(rho * (1-B^4)));
 %uses precomputed values for volumeetric flow rate
 dC_0dP = @(Q,P)( ((Q)/(K1)) * -0.5 * P^(-3/2) );
 %sensitivity with respect to mass
-dC_0dm = @(M,T,P)( 1 / (T * sqrt(P) * K1) );
+dC_0dm = @(M,T,P)( 1 / (rho * T * sqrt(P) * K1) );
 %sensitivity with respect to time
-dC_0dt = @(M,T,P)( -M  / (T^2 * sqrt(P) * K1));
+dC_0dt = @(M,T,P)( -M  / (rho * T^2 * sqrt(P) * K1));
 
 %%Uncertainities in Reynolds number
 %bind a constant to simplify calcs
@@ -74,8 +74,8 @@ dRdt = @(M,T)( -1 * K2 * M/ T^2 );
 
 part1_fig = figure;
 semilogx(Reynolds, C_0, 'kd');
-xlabel('Reynolds numbers');
-ylabel('Discharge Coefficient')
+xlabel('Reynolds number', 'interpreter', 'latex');
+ylabel('Discharge Coefficient $C_{0}$', 'interpreter', 'latex')
 
 mass_uncertainity = 0.05; %accurate to first decimal place
 time_uncertainity = 0.05; %accurate to first decimal place
@@ -89,10 +89,10 @@ pressure_uncertainity = 2 * 0.05; %combining uncertainities of both pressure mea
 
 error_C_0 = sqrt( (arrayfun(dC_0dP, Q_actual, Delta_p) * pressure_uncertainity).^2 + ...
 					(arrayfun(dC_0dm, Mass, Time, Delta_p) * mass_uncertainity).^2 + ...
-					(arrayfun(dC_0dt, Mass, Time, Delta_p) * time_uncertainity).^2)
+					(arrayfun(dC_0dt, Mass, Time, Delta_p) * time_uncertainity).^2);
 
 error_Reynolds = sqrt( (arrayfun(dRdm, Mass, Time) * mass_uncertainity).^2 + ...
-						(arrayfun(dRdt, Mass, Time) * time_uncertainity).^2 )
+						(arrayfun(dRdt, Mass, Time) * time_uncertainity).^2 );
 hold on
 %plot the error bars manually
 for tmp_indx = 1:length(Reynolds)
@@ -107,4 +107,8 @@ for tmp_indx = 1:length(Reynolds)
 	plot(tmp_x, tmp_y, 'k-')
 end
 
-%errorbar(Reynolds, C_0, error_C_0)
+xlim([1.5e5,3.9e5])
+legend('Discharge Coefficient')
+
+%%Friction factor determination
+
