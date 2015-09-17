@@ -50,13 +50,35 @@ Velocity = Q_actual ./ A_orifice;
 
 [shouldBeTrue, indx] = ismember('one_copper', experiment1.pipe_configuration);
 assert(shouldBeTrue == true)
-Reynolds = rho * Velocity * experiment1.pipe_inner_dia(indx) / mu
+Reynolds = rho * Velocity * experiment1.pipe_inner_dia(indx) / mu;
+
+%bind a constant to simplify expression below
 
 %compute the sensitvities of the discharge coefficients to the measured variable
-dC_0dP = @(X)(X)
+%uses precomputed values for pressure rate
+%note that we add the uncertainities of the two pressure measurements
+%to create a simpler expression for overall uncertainity
+
+dC_0dP = @(Q,P)( ((Q)/(A_orifice * sqrt(2/(rho*(1-B^4))))) * -0.5 * P^(-3/2) );
+
+%sensitivity with respect to mass
+dC_0dm = @(M,T,P)( 1 / (T * A_orifice * sqrt((2*P)/(rho*(1-B^4)))) );
+
+%sensitivity with respect to time
+dC_0dt = @(M,T,P)( -M  / (T^2 * A_orifice * sqrt((2*P)/(rho*(1-B^4)))) );
 
 part1_fig = figure;
 semilogx(Reynolds, C_0, 'kd');
 xlabel('Reynolds numbers');
 ylabel('Discharge Coefficient')
 %errorbars(x)
+
+mass_uncertainity = 0.05; %accurate to first decimal place
+time_uncertainity = 0.05; %accurate to first decimal place
+pressure_uncertainity = 2 * 0.05; %combining uncertainities of both pressure measurements
+
+error_C_0 = sqrt( (arrayfun(dC_0dP, Q_actual, Delta_p) * pressure_uncertainity).^2 + ...
+					(arrayfun(dC_0dm, Mass, Time, Delta_p) * mass_uncertainity).^2 + ...
+					(arrayfun(dC_0dt, Mass, Time, Delta_p) * time_uncertainity).^2)
+hold on
+errorbar(Reynolds, C_0, error_C_0)
