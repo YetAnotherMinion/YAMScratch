@@ -178,8 +178,6 @@ experiment1.data_sz(indx,1) = length(tmp_flow);
 [shouldBeTrue, indx] = ismember('one_copper', experiment1.pipe_configuration);
 assert(shouldBeTrue == true)
 
-
-
 tmp_flow = [2.88 ,2.819 ,2.699 ,2.477 ,2.237 ,1.917 ,1.692 ,1.478 ,2.303 ,1.785];
 experiment1.flow_turbine(indx,1:length(tmp_flow)) = 0.57 * (tmp_flow - 1.02);
 %here pressure is in inches of mercury, so we convert to psi
@@ -219,6 +217,6 @@ end
 
 legend(tmp_spec{:})
 xlabel('Reynolds number', 'interpreter', 'latex');
-ylabel('Discharge Coefficient $C_{0}$', 'interpreter', 'latex')
+ylabel('Friction Factor $f$', 'interpreter', 'latex')
 
 
