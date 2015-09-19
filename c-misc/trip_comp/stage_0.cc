@@ -25,7 +25,6 @@ typedef long long ll;
 
 int main(int argc, char const *argv[])
 {
-	printf("C Hello World\n");
-	cout << "C++ Hello World" << endl;
+	cout << "Just looking at all of the stages" << endl;
 	return 0;
 }
