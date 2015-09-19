@@ -28,7 +28,7 @@ typedef long long ll;
 #define ERROR_CODE 42
 #define WALL_CHAR 'W'
 #define NO_WALL 'Y'
-#define PASSAGE_CHAR ' '
+#define PASSAGE_CHAR '_'
 #define CORNER_CHAR '+'
 
 /*this definition of struct should maintain the invariant
@@ -43,7 +43,7 @@ struct MazeCell {
 	MazeCell() {
 		for(uint32_t ii = 0; ii < 4; ++ii) {
 			this->connected[ii] = NULL;
-			this->possible[ii] = WALL_CHAR;
+			this->possible[ii] = NO_WALL;
 		}
 		distance = -1; /*set equal to max uint*/
 		visited = 0; /*not visited*/
@@ -67,25 +67,21 @@ struct Maze {
 				uint32_t indx = ii * width + jj;
 				/*top wall*/
 				if(0 == ii){
-					indx = 0 + jj;
 					this->cells[indx].connected[UP] = NULL;
 					this->cells[indx].possible[UP] = WALL_CHAR;
 					if(0 == jj) {
 						this->cells[indx].possible[UP] = NO_WALL;
 					}
 				} else {
-					indx = ii * width + jj;
-					this->cells[indx].possible[UP] = WALL_CHAR;
+					
 				}
 				/*left wall*/
 				if(0 == jj) {
-					indx = ii*width + 0;
 					this->cells[indx].connected[LEFT] = NULL;
 					this->cells[indx].possible[LEFT] = WALL_CHAR;
 				}
 				/*bottom wall*/
 				if((height-1) == ii) {
-					indx = ii * width + jj;
 					this->cells[indx].connected[DOWN] = NULL;
 					this->cells[indx].possible[DOWN] = WALL_CHAR;
 					if(width-1 == jj) {
@@ -94,7 +90,6 @@ struct Maze {
 				}
 				/*right wall*/
 				if((width-1) == jj) {
-					indx = ii * width + jj;
 					this->cells[indx].connected[RIGHT] = NULL;
 					this->cells[indx].possible[RIGHT] = WALL_CHAR;
 				}
@@ -108,17 +103,26 @@ struct Maze {
 	}
 
 	void link(uint32_t A, uint32_t B, enum MazeDirections dir, char wall) {
+		/*A is the source, linking to B*/
+		MazeDirections opposite;
 		switch(dir) {
 			case LEFT:
-				this->cells[A];
+				opposite = RIGHT;
 				break;
 			case RIGHT:
+				opposite = LEFT;
 				break;
 			case UP:
+				opposite = DOWN;
 				break;
 			case DOWN:
+				opposite = UP;
 				break;
 		}
+		this->cells[A].possible[dir] = wall;
+		this->cells[B].possible[opposite] = wall;
+		this->cells[A].connected[dir] = &(this->cells[B]);
+		this->cells[B].connected[opposite] = &(this->cells[A]);
 	}
 
 	void print_maze() {
@@ -157,7 +161,7 @@ struct Maze {
 						throw std::runtime_error("bad wall state");
 						break;
 				}
-				middle_buffer[2*jj] = A;
+				middle_buffer[2*jj] = (A) ? A : PASSAGE_CHAR;
 				switch(this->cells[indx].possible[UP]) {
 					case WALL_CHAR:
 						B = '-';
@@ -216,7 +220,7 @@ struct Maze {
 					B = middle_buffer[2*jj];
 					/*B should always set*/
 					if(A && B) {
-						bottom_buffer[2*jj] = CORNER_CHAR;
+						bottom_buffer[2*jj] = ('|' == B) ? CORNER_CHAR : A;
 					} else {
 						if(CORNER_CHAR != bottom_buffer[2*jj]) {
 							bottom_buffer[2*jj] = (A | B) ? (A | B) : PASSAGE_CHAR;
@@ -224,7 +228,7 @@ struct Maze {
 					}
 					B = middle_buffer[2*jj + 2];
 					if(A && B) {
-						bottom_buffer[2*jj + 2] = CORNER_CHAR;
+						bottom_buffer[2*jj + 2] = ('|' == B) ? CORNER_CHAR : A;
 					} else {
 						if(CORNER_CHAR != bottom_buffer[2*jj + 2]) {
 							bottom_buffer[2*jj + 2] = (A | B) ? (A | B) : PASSAGE_CHAR;
@@ -332,11 +336,7 @@ int main(int argc, char const *argv[])
 			return ERROR_CODE;
 		}
 	}
-
-	cout << "width: " << width << " height: " << height << endl;
-
 	Maze mymaze(width, height);
 	mymaze.print_maze();
-
 	return 0;
 }
