@@ -138,113 +138,73 @@ struct Maze {
 		top_buffer[buff_sz-1] = '\0';
 		memset(middle_buffer, '#', buff_sz-1);
 		middle_buffer[buff_sz-1] = '\0';
-
 		for(uint32_t ii = 0; ii < this->height; ++ii) {
-			if(this->height-1 == ii) {
-				/*fill in the botton for*/
-				bottom_buffer = new char[buff_sz];
-				memset(bottom_buffer, '#', buff_sz-1);
-				bottom_buffer[buff_sz-1] = '\0';
-			}
 			for(uint32_t jj = 0; jj < this->width; ++jj) {
-				uint32_t indx = ii * this->width + jj;
+				uint32_t indx = ii * width + jj;
 				char A, B;
-				switch(this->cells[indx].possible[LEFT]) {
-					case WALL_CHAR:
-						A = '|';
-						break;
-					case NO_WALL:
-						A = '\0';
-						break;
-					default:
-						A = '\0';
-						throw std::runtime_error("bad wall state");
-						break;
-				}
-				middle_buffer[2*jj] = (A) ? A : PASSAGE_CHAR;
-				switch(this->cells[indx].possible[UP]) {
-					case WALL_CHAR:
-						B = '-';
-						break;
-					case NO_WALL:
-						B = '\0';
-						break;
-					default:
-						B = '\0';
-						throw std::runtime_error("bad wall state");
-						break;
-				}
-				top_buffer[2*jj + 1] = (B) ? B : PASSAGE_CHAR;
-
-				if(A && B) {
-					top_buffer[2*jj] = CORNER_CHAR;
-				} else {
-					/*dont overwrite a previous corner*/
-					if(CORNER_CHAR != top_buffer[2*jj]) {
-						top_buffer[2*jj] = (A | B) ? (A | B) : PASSAGE_CHAR;
-					}
-				}
-				switch(this->cells[indx].possible[RIGHT]) {
-				case WALL_CHAR:
-					A = '|';
-					break;
-				case NO_WALL:
-					A = '\0';
-					break;
-				default:
-					A = '\0';
-					throw std::runtime_error("bad wall state");
-				}
-				middle_buffer[2*jj +2] = (A) ? A : PASSAGE_CHAR;
-				if(A && B) {
-					top_buffer[2*jj + 2] = CORNER_CHAR;
-				} else {
-					if(CORNER_CHAR != top_buffer[2*jj + 2]) {
-						top_buffer[2*jj + 2] = (A | B) ? (A | B) : PASSAGE_CHAR;
-					}
-				}
-				/*handle the bottom row in special manner*/
-				if(this->height-1 == ii) {
-					switch(this->cells[indx].possible[DOWN]) {
-						case WALL_CHAR:
-							A = '-';
-							break;
-						case NO_WALL:
-							A = '\0';
-							break;
-						default:
-							A = '\0';
-							throw std::runtime_error("bad wall state");
-					}
-					bottom_buffer[2*jj + 1] = (A) ? A : PASSAGE_CHAR;
-					B = middle_buffer[2*jj];
-					/*B should always set*/
-					if(A && B) {
-						bottom_buffer[2*jj] = ('|' == B) ? CORNER_CHAR : A;
+				if(WALL_CHAR == this->cells[indx].possible[LEFT]) {
+					middle_buffer[2*jj] = '|';
+					if(WALL_CHAR == this->cells[indx].possible[UP]) {
+						top_buffer[2*jj + 1] = '-';
+						top_buffer[2*jj] = '+';
 					} else {
-						if(CORNER_CHAR != bottom_buffer[2*jj]) {
-							bottom_buffer[2*jj] = (A | B) ? (A | B) : PASSAGE_CHAR;
-						}
+						top_buffer[2*jj + 1] = PASSAGE_CHAR;
+						top_buffer[2*jj] = '|';
 					}
-					B = middle_buffer[2*jj + 2];
-					if(A && B) {
-						bottom_buffer[2*jj + 2] = ('|' == B) ? CORNER_CHAR : A;
+				} else {
+					middle_buffer[2*jj] = PASSAGE_CHAR;
+					if(WALL_CHAR == this->cells[indx].possible[UP]) {
+						top_buffer[2*jj + 1] = '-';
+						top_buffer[2*jj] = '-';
 					} else {
-						if(CORNER_CHAR != bottom_buffer[2*jj + 2]) {
-							bottom_buffer[2*jj + 2] = (A | B) ? (A | B) : PASSAGE_CHAR;
-						}
+						top_buffer[2*jj + 1] = PASSAGE_CHAR;
 					}
 				}
-				/*write a space for the middle chars*/
-				middle_buffer[2*jj + 1] = PASSAGE_CHAR;
-
+				/*===============================*/
+				if(WALL_CHAR == this->cells[indx].possible[RIGHT]) {
+					middle_buffer[2*jj + 2] = '|';
+					if('-' == top_buffer[2*jj + 1]) {
+						top_buffer[2*jj + 2] = '+';
+					} else {
+						top_buffer[2*jj + 2] = '|';
+					}
+				} else {
+					middle_buffer[2*jj + 2] = PASSAGE_CHAR;
+					if('-' == top_buffer[2*jj + 1]) {
+						top_buffer[2*jj + 2] = '-';
+					} else {
+						top_buffer[2*jj + 2] = PASSAGE_CHAR;
+					}
+				}
+				middle_buffer[2*jj + 1] = '0';
 			}
 			cout << top_buffer << endl;
 			cout << middle_buffer << endl;
-			if(this->height-1 == ii) {
-				cout << bottom_buffer << endl;
+		}
+		for(uint32_t ll = 0; ll < width; ++ll) {
+			uint32_t indx = (height-1) * width + ll;
+			if(WALL_CHAR == this->cells[indx].possible[DOWN]){
+				top_buffer[2*jj+1] = '-';
+				if(WALL_CHAR == this->cells[indx].possible[LEFT]) {
+					top_buffer[2*jj] = '+';
+				} else {
+					top_buffer[2*jj] = '-';
+				}
+				if(WALL_CHAR == this->cells[indx].possible[RIGHT]) {
+					top_buffer[2*jj + 2] = '+';
+				} else {
+					top_buffer[2*jj + 2] = '-';
+				}
+			} else {
+				top_buffer[2*jj + 1] = PASSAGE_CHAR;
+				if(WALL_CHAR == this->cells[indx].possible[RIGHT]) {
+					if('+' == top_buffer[2*jj]) {
+						
+					}
+				}
 			}
 		}
+		cout << top_buffer << endl;
 		delete[] top_buffer;
 		delete[] middle_buffer;
 		delete[] bottom_buffer;
