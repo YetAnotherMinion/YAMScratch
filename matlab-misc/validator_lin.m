@@ -151,7 +151,8 @@ for ii = 1:100000
 	pass_1(determined_letter_index) = dependent_vals(:);
 	pass_1(undetermined_indices) = independent_vals(:);
 	%get the indices and generate the password
-	validator_outer = pass_1(pass_1>=65&pass_1<=122);
+	%we only actually need to check the dependent values
+	validator_outer = dependent_vals(dependent_vals>=65&dependent_vals<=122);
 	validator_inner = validator_outer(validator_outer>90&validator_outer<97);
 	if(length(validator_outer) == K)
 		if(length(validator_inner) == 0)
