@@ -119,7 +119,7 @@ xlim([1.5e5,3.9e5])
 %%Friction factor determination
 
 %given voltage it converts from kg/sec to ft^3/sec
-turbineConverter = @(X)(2.2046*(0.57 * (X - 1.02)));
+turbineConverter = @(X)(2.2046*(0.57 * (X - 0.997)));
 
 %%half PVC
 [shouldBeTrue, indx] = ismember('half_PVC', experiment1.pipe_configuration);
@@ -127,6 +127,7 @@ assert(shouldBeTrue == true)
 
 tmp_flow = [2.5,2.39,2.32,2.31,2.24,1.9,2.315,2.26,2.08];
 experiment1.flow_turbine(indx,:) = turbineConverter(tmp_flow);
+%pressure is in psi directly
 tmp_upstream = [28.5, 24.9, 22.5, 22, 20.2, 11, 22.6, 23.2, 21.8];
 tmp_downstream = [11.5 ,10.1 ,9.1 ,8.8, 8.1, 4.2 ,9.1 ,10.8, 17.6];
 experiment1.pressure_psi(indx,:) = tmp_upstream - tmp_downstream;
@@ -139,6 +140,7 @@ assert(shouldBeTrue == true)
 
 tmp_flow = [1.61 ,1.526 ,1.493 ,1.475 ,1.455 ,1.526];
 experiment1.flow_turbine(indx,1:length(tmp_flow)) = turbineConverter(tmp_flow);
+%pressure is in psi directly
 tmp_upstream = [43.6, 32.8, 29.2, 27, 30.8, 41.3];
 tmp_downstream = [12.4 ,9.2 ,8.1 ,7.5 ,12.9 ,17.8];
 experiment1.pressure_psi(indx,1:length(tmp_flow)) = tmp_upstream - tmp_downstream;
@@ -174,7 +176,7 @@ assert(shouldBeTrue == true)
 
 tmp_flow = [2.831, 3.053, 2.792, 2.711, 2.382, 1.711, 1.740, 3.135];
 experiment1.flow_turbine(indx,1:length(tmp_flow)) = turbineConverter(tmp_flow);
-%here pressure is in inches of mercury, so we convert to psi
+%here pressure is Volts of transducer, so we convert to psi
 tmp_voltage = [2.686, 3.32, 2.663, 2.412, 1.602, 0.442, 0.547235, 3.581];
 experiment1.pressure_psi(indx,1:length(tmp_flow)) = 0.5 *(tmp_voltage);
 experiment1.data_sz(indx,1) = length(tmp_flow);
@@ -185,7 +187,7 @@ assert(shouldBeTrue == true)
 
 tmp_flow = [3.174, 3.105, 3.123, 2.663, 2.757, 1.567, 2.233, 2.866];
 experiment1.flow_turbine(indx,1:length(tmp_flow)) = turbineConverter(tmp_flow);
-%here pressure is in inches of mercury, so we convert to psi
+%here pressure is Volts of transducer, so we convert to psi
 tmp_voltage = [1.904, 1.81068, 1.899, 1.274, 1.30112, 0.111307, 0.701749, 1.39082 ];
 experiment1.pressure_psi(indx,1:length(tmp_flow)) = 0.5 *(tmp_voltage);
 experiment1.data_sz(indx,1) = length(tmp_flow);
@@ -203,10 +205,14 @@ for indx = 1:length(experiment1.pipe_configuration)
 	Reynolds = rho * Velocity * experiment1.pipe_inner_dia(indx) / mu;
 	%covert the psi to lb/ft^2
 	tmp_val = ((2 * 144 * 32.17 * experiment1.pressure_psi(indx, 1:nCols) ./ (Velocity.^2) ) / rho) - 0.16;
-	fric_factor = tmp_val .* experiment1.pipe_inner_dia(indx) / experiment1.pressure_tap_L(indx)
+	fric_factor = tmp_val .* experiment1.pipe_inner_dia(indx) / experiment1.pressure_tap_L(indx);
+	%cache the values of the reynolds number, fric factor, and velocity
+	experiment1.Velocity(indx, 1:length(Velocity)) = Velocity;
+	experiment1.fric_factor(indx,1:length(fric_factor)) = fric_factor;
+	experiment1.Reynolds(indx, 1:length(fric_factor)) = Reynolds;
 	plot(Reynolds, fric_factor, color_spec{indx});
 	hold on
-	disp(experiment1.pipe_configuration{indx})
+	%disp(experiment1.pipe_configuration{indx})
 end
 %hack to format the labels
 tmp_spec = {};
@@ -219,4 +225,49 @@ legend(tmp_spec{:})
 xlabel('Reynolds number', 'interpreter', 'latex');
 ylabel('Friction Factor $f$', 'interpreter', 'latex')
 
+hold on
 
+%convert the mass error into units of lbm/ft^3
+Mdot_error = 0.005 * 0.57 * 2.2046;
+
+dRedm = @(D)(D /( mu * pi * D^2 /4));
+%must convert pressure in psi to lbm/ft^3 to use with density
+dfdm = @(D, P, V, L)( (-4 * P * 144 * 32.17 * D)/(rho^2 * L * pi * D^2 / 4) * V^-3)
+%take care of converting units here as well
+dfdP = @(D, V, L)( 2 * D / (rho * V^2 * L))
+%now compute the error bars for each data set
+for indx = 1:length(experiment1.pipe_configuration)
+	nCols = experiment1.data_sz(indx);
+	error_Reynolds = sqrt( (arrayfun(dRedm, experiment1.pipe_inner_dia(indx)) * Mdot_error).^2 );
+	assert(isscalar(error_Reynolds));
+
+	%%remember that all pressures are stored internally as psi, which is why we have to convert
+	tmp_name =  experiment1.pipe_configuration{indx};
+	if strcmp(tmp_name, 'one_copper') || strcmp(tmp_name, 'one_steel')
+		%%from pressure transducer accurate to third decimal plate
+		% convert to units of lbm.ft^3 for dimensional fit
+		pressure_error = 0.0005 * 0.5;
+	elseif strcmp(tmp_name, 'quarter_copper') || strcmp(tmp_name, 'half_PVC')
+		%from pressure gauge accurate to first decimal
+		pressure_error = 0.05;
+	else
+		%%from inches of mercury, accurate to tenth of inch
+		pressure_error = 0.05 * 0.49109778;
+	end
+	
+	D1 = ones(1,nCols) * experiment1.pipe_inner_dia(indx);
+	L1 = ones(1,nCols) * experiment1.pressure_tap_L(indx);
+	error_fricFactor = sqrt( (arrayfun(dfdm, D1, experiment1.pressure_psi(indx,1:nCols), experiment1.Velocity(indx, 1:nCols), L1) * Mdot_error) .^2 + ... 
+		(arrayfun(dfdP, D1, experiment1.Velocity(indx, 1:nCols), L1) * pressure_error ) .^2 );
+
+	for tmp_indx = 1:experiment1.data_sz(indx)
+		tmp_x = [experiment1.Reynolds(indx, tmp_indx) - error_Reynolds, experiment1.Reynolds(indx, tmp_indx) + error_Reynolds];
+		tmp_y = [experiment1.fric_factor(indx, tmp_indx), experiment1.fric_factor(indx, tmp_indx)  ];
+		plot(tmp_x, tmp_y, 'k-')
+		hold on
+		tmp_x = [experiment1.Reynolds(indx, tmp_indx), experiment1.Reynolds(indx, tmp_indx)];
+		tmp_y = [experiment1.fric_factor(indx, tmp_indx) + error_fricFactor(tmp_indx), experiment1.fric_factor(indx, tmp_indx) - error_fricFactor(tmp_indx)];
+		plot(tmp_x, tmp_y, 'k-')
+		hold on
+	end
+end
