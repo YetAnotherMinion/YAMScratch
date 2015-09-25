@@ -221,20 +221,48 @@ for string = experiment1.pipe_configuration
 	tmp_spec{end+1} = tmp_rep{1};
 end
 
-legend(tmp_spec{:})
+
 xlabel('Reynolds number', 'interpreter', 'latex');
 ylabel('Friction Factor $f$', 'interpreter', 'latex')
-
 hold on
+%put in therotical values for the copper pipes
+color_spec = {'k-', 'r-', 'b-', 'g-', 'm-', 'g--'};
+for indx = 1:length(experiment1.pipe_configuration)
+	nCols = experiment1.data_sz(indx);
+	disp(experiment1.pipe_configuration{indx})
+	if findstr('copper', experiment1.pipe_configuration{indx})
+		epsilon = 0.000005; %in ft
+	elseif findstr('steel', experiment1.pipe_configuration{indx})
+		epsilon = 0.0005; %in ft
+		disp('found steel')
+	elseif findstr('PVC', experiment1.pipe_configuration{indx})
+		epsilon = 0; %PVC is assumed smooth
+	else
+		error('pipe material no found');
+	end
+		
+	lhs = -1.8 * log10( ((epsilon / experiment1.pipe_inner_dia(indx))/ 3.7)^1.11 + (6.9 *experiment1.Reynolds(indx, 1:nCols ).^-1) );
+	lhs = lhs.^(-2)
+	[Y, I] = sort(experiment1.Reynolds(indx, 1:nCols));
+	plot(Y, lhs(I), color_spec{indx})
+end
+
+h = legend(tmp_spec{:}, 'Haaland $f$ for $\frac{1}{4}$ copper', ...
+			'Haaland $f$ for $\frac{1}{2}$ copper', ...
+			'Haaland $f$ for $1$ copper', ...
+			'Haaland $f$ for $\frac{1}{2}$ PVC', ...
+			'Haaland $f$ for $\frac{1}{2}$ steel', ...
+			'Haaland $f$ for $1$ steel' )
+set(h, 'Interpreter', 'latex')
 
 %convert the mass error into units of lbm/ft^3
 Mdot_error = 0.005 * 0.57 * 2.2046;
 
 dRedm = @(D)(D /( mu * pi * D^2 /4));
 %must convert pressure in psi to lbm/ft^3 to use with density
-dfdm = @(D, P, V, L)( (-4 * P * 144 * 32.17 * D)/(rho^2 * L * pi * D^2 / 4) * V^-3)
+dfdm = @(D, P, V, L)( (-4 * P * 144 * 32.17 * D)/(rho^2 * L * pi * D^2 / 4) * V^-3);
 %take care of converting units here as well
-dfdP = @(D, V, L)( 2 * D / (rho * V^2 * L))
+dfdP = @(D, V, L)( 2 * 144 * 32.17 * D / (rho * V^2 * L));
 %now compute the error bars for each data set
 for indx = 1:length(experiment1.pipe_configuration)
 	nCols = experiment1.data_sz(indx);
@@ -257,6 +285,9 @@ for indx = 1:length(experiment1.pipe_configuration)
 	
 	D1 = ones(1,nCols) * experiment1.pipe_inner_dia(indx);
 	L1 = ones(1,nCols) * experiment1.pressure_tap_L(indx);
+
+	%foo =(arrayfun(dfdP, D1, experiment1.Velocity(indx, 1:nCols), L1) * pressure_error )
+
 	error_fricFactor = sqrt( (arrayfun(dfdm, D1, experiment1.pressure_psi(indx,1:nCols), experiment1.Velocity(indx, 1:nCols), L1) * Mdot_error) .^2 + ... 
 		(arrayfun(dfdP, D1, experiment1.Velocity(indx, 1:nCols), L1) * pressure_error ) .^2 );
 
