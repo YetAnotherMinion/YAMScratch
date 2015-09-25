@@ -201,7 +201,7 @@ for indx = 1:length(experiment1.pipe_configuration)
 	nCols = experiment1.data_sz(indx);
 
 	Q_actual = experiment1.flow_turbine(indx, 1:nCols) / rho;
-	Velocity = Q_actual ./ A_orifice;
+	Velocity = Q_actual ./ (experiment1.pipe_inner_dia(indx)^2 * pi /4 );
 	Reynolds = rho * Velocity * experiment1.pipe_inner_dia(indx) / mu;
 	%covert the psi to lb/ft^2
 	tmp_val = ((2 * 144 * 32.17 * experiment1.pressure_psi(indx, 1:nCols) ./ (Velocity.^2) ) / rho) - 0.16;
