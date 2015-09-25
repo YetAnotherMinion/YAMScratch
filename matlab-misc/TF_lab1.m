@@ -119,7 +119,7 @@ xlim([1.5e5,3.9e5])
 %%Friction factor determination
 
 %given voltage it converts from kg/sec to ft^3/sec
-turbineConverter = @(X)(2.2046*(0.57 * (X - 0.997)));
+turbineConverter = @(X)(2.2046*(0.57 * (X - 1.02)));
 
 %%half PVC
 [shouldBeTrue, indx] = ismember('half_PVC', experiment1.pipe_configuration);
