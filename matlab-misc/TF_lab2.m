@@ -5,6 +5,7 @@ close('all');
 
 G_INCH_WATER_TO_PSI = 0.0361396333;
 G_INCH_SQ_PER_FT_SQ = 144;
+G_INCH_PER_FT = 12;
 
 %convert plate dimensions from inches to ft
 plate_width = 10/12;
@@ -29,6 +30,49 @@ thermocouple_map.descrition = {};
 thermocouple_map.descrition{1,33} = 'leading_edge';
 thermocouple_map.descrition{1,34} = 'trailing_edge';
 thermocouple_map.descrition{1,35} = 'ambient_air';
+
+%%General Boundary layer
+BoundaryLayerExperiment = struct;
+BoundaryLayerExperiment.free_stream_pressure = [];
+BoundaryLayerExperiment.free_stream_y = [];
+BoundaryLayerExperiment.delta_y = [];
+BoundaryLayerExperiment.dynamic_pressure = [];
+BoundaryLayerExperiment.data_sz = [];
+%%Boundary layer 1 experiment, uses pressure transducer_1
+% vv RECORD DATA HERE vv
+%----------------------------
+tmp_y = [] ./ G_INCH_PER_FT;
+tmp_V = [];
+tmp_free_stream_voltage = NaN;
+tmp_free_stream_y = NaN;
+%-----------------------------
+assert(length(tmp_V) == length(tmp_y));
+tmp_pressure = transducer_1(tmp_V);
+INDX = 1;
+BoundaryLayerExperiment.data_sz(INDX, 1) = length(tmp_y);
+BoundaryLayerExperiment.delta_y(INDX, 1:length(tmp_y)) = tmp_y; 
+BoundaryLayerExperiment.dynamic_pressure(INDX, 1:length(tmp_V)) = tmp_pressure;
+BoundaryLayerExperiment.free_stream_pressure(INDX, 1) = transducer_1(tmp_free_stream_voltage);
+BoundaryLayerExperiment.free_stream_y(INDX, 1) = tmp_free_stream_y;
+clear tmp_y tmp_V tmp_pressure tmp_free_stream_y tmp_free_stream_voltage;
+%%Boundary layer 2 experiment
+% vv RECORD DATA HERE vv
+%----------------------------
+tmp_y = [1,2,3,4] ./ G_INCH_PER_FT; %convert inches to ft
+tmp_V = [1,2,3,4];
+tmp_free_stream_voltage = NaN;
+tmp_free_stream_y = NaN;
+%-----------------------------
+assert(length(tmp_V) == length(tmp_y));
+tmp_pressure = transducer_2(tmp_V);
+INDX = 2;
+BoundaryLayerExperiment.data_sz(INDX,1) = length(tmp_y);
+BoundaryLayerExperiment.delta_y(INDX, 1:length(tmp_y)) = tmp_y; 
+BoundaryLayerExperiment.dynamic_pressure(INDX, 1:length(tmp_V)) = tmp_pressure;
+BoundaryLayerExperiment.free_stream_pressure(INDX, 1) = transducer_2(tmp_free_stream_voltage);
+BoundaryLayerExperiment.free_stream_y(INDX, 1) = tmp_free_stream_y;
+clear tmp_y tmp_V tmp_pressure tmp_free_stream_y tmp_free_stream_voltage;
+
 
 %%First plot is nondimensional ration of u/U_infinity vs y/sigma
 
