@@ -1,7 +1,7 @@
 clear
 clc
 %K is the length of the password, must by divisible by 2
-K = 50;
+K = 500;
 assert(mod(K, 2) == 0);
 assert(K >= 10);
 MODULUS = 255;
@@ -154,7 +154,8 @@ for ii = 1:100000
 	%we only actually need to check the dependent values
 	validator_outer = dependent_vals(dependent_vals>=65&dependent_vals<=122);
 	validator_inner = validator_outer(validator_outer>90&validator_outer<97);
-	if(length(validator_outer) == K)
+	%there are only 6 free characters
+	if(length(validator_outer) == 6)
 		if(length(validator_inner) == 0)
 			disp('========\====|=====/==')
 			disp('======\==\=|=|==/=/===')
