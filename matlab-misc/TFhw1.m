@@ -30,12 +30,12 @@ mm_mercury = delta_p * 0.00750061683 % conversion factor from Google instant
 %now we solve equation from other side
 delta_p2 = 500 / 0.00750061683; % convert to pascals
 
-Q = C_0 * A_2 * sqrt((2*delta_p2)/rho + (1 - (A_2/A_1)^2)^-1) % units of m^3/s
+Q = C_0 * A_2 * sqrt((2*delta_p2)/(rho * (1 - (A_2/A_1)^2)^-1)) % units of m^3/s
 
 
 %%Part C
 mu = (7.79 + 0.6*(8.72 - 7.79)) * 1e-4; % interpolation from table in kamenski & jennings
-Velocity = V_dot / A_2; % take Reynolds number at orifice
+Velocity = V_dot / A_1; % take Reynolds number at orifice
 Re = rho * Velocity * d_1 / mu
 
 disp('========================================')
