@@ -7,8 +7,8 @@ G_INCH_WATER_TO_PSI = 0.0361396333;
 G_INCH_SQ_PER_FT_SQ = 144;
 G_INCH_PER_FT = 12;
 %assumtions about temperature
-G_DENSITY_AIR = NaN;
-G_VISCOSITY_AIR = NaN;
+G_DENSITY_AIR = 2.329*1e-3; %slugs per ft^3 @ 70F
+G_VISCOSITY_AIR = 3.82 * 1e-7; %lbf per ft^2
 %translation factor from centerline of piot tube input to bottom edge
 G_PIOT_OFFSET = 0.0; %offset in inches
 %which is the zeroed when the bottom of the tube
@@ -86,7 +86,7 @@ tmp_y = ([0.04, 0.09, 0.14, 0.19, 0.24, 0.29, ...
 		1.30, 1.40, 1.50, 1.60, 1.70, 1.80, ...
 		1.90, 2.00] + G_PIOT_OFFSET) ./ G_INCH_PER_FT; %convert inches to ft
 tmp_V = [3.32709, 3.67425, 3.78969, 3.87310, 3.93556, 4.01625, ...
- 		4.06472, 4.13817, 4.17743, 4,21463, 4.30555, 4.36680, ... 
+ 		4.06472, 4.13817, 4.17743, 4.21463, 4.30555, 4.36680, ... 
  		4.40841, 4.45396, 4.50337, 4.53512, 4.56987, 4.60782, ...
  		4.61627, 4.62529, 4.63281, 4.64981, 4.64661, 4.65535, ...
  		4.65356, 4.65713, 4.64736, 4.64577, 4.62857, 4.62933, ...
@@ -111,11 +111,11 @@ NU = G_DENSITY_AIR
 FrictionvVelocityFactory = @(U, Y)(@(U_t)( U / (U_t/KAPPA * log( Y * U_t/ NU) + BETA * U_t)))
 
 for indx = 1:BoundaryLayerExperiment.data_sz(1)
-	tmp_velocity = 
+	tmp_velocity = 6;
 	tmp_f = FrictionvVelocityFactory( ...
-				BoundaryLayerExperiment.free_stream_velocity(indx), ...
-				BoundaryLayerExperiment.delta_y(indx));
-	fzero(tmp_f)
+				BoundaryLayerExperiment.free_stream_velocity(1), ...
+				BoundaryLayerExperiment.delta_y(1));
+	%fzero(tmp_f, 0.04)
 end
 
 
@@ -130,7 +130,7 @@ BL_fig = figure;
 semilogx(tmp_x, tmp_y, 'k-');
 hold on
 %plot the physical upper limit of u/U_infinity
-plot(tmp_x, ones(1,length(tmp_x)), 'k--')
+
 
 xlabel('$\frac{y}{\sigma}$', 'interpreter', 'latex', 'FontSize', 16);
 ylabel('$\frac{u}{U_{\infty}}$', 'interpreter', 'latex', 'FontSize', 18);
