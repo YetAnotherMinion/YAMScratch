@@ -3,12 +3,14 @@ clear('all');
 close('all');
 
 
-G_INCH_WATER_TO_PSI = 0.0361396333;
+G_INCH_WATER_TO_PASCAL = 249.088908333;
 G_INCH_SQ_PER_FT_SQ = 144;
-G_INCH_PER_FT = 12;
-%assumtions about temperature
-G_DENSITY_AIR = 2.329*1e-3; %slugs per ft^3 @ 70F
-G_VISCOSITY_AIR = 3.82 * 1e-7; %lbf per ft^2
+G_INCH_PER_METER = 39.3700787;
+%assumtions about temperature from engineering toolbox
+%http://www.engineeringtoolbox.com/air-density-specific-weight-d_600.html
+
+G_DENSITY_AIR = 1.177; %kg per m^3 @ 27C
+G_VISCOSITY_AIR = 1.846e-5; %kg / m s @ 300 K
 %translation factor from centerline of piot tube input to bottom edge
 G_PIOT_OFFSET = 0.0; %offset in inches
 %which is the zeroed when the bottom of the tube
@@ -20,8 +22,8 @@ plate_length = 60/12;
 %covert the measurement of voltage into lbf/ft^2
 raw_transducer_1 = @(V)(0.2026*V - 0.5142);
 raw_transducer_2 = @(V)(0.04*V - 0.1018);
-transducer_1 = @(V)(raw_transducer_1(V) * G_INCH_WATER_TO_PSI * G_INCH_SQ_PER_FT_SQ);
-transducer_2 = @(V)(raw_transducer_2(V) * G_INCH_WATER_TO_PSI * G_INCH_SQ_PER_FT_SQ);
+transducer_1 = @(V)(raw_transducer_1(V) * G_INCH_WATER_TO_PASCAL);
+transducer_2 = @(V)(raw_transducer_2(V) * G_INCH_WATER_TO_PASCAL);
 
 %Thermocouple map of distances, if NaN
 thermocouple_map = struct;
@@ -57,7 +59,7 @@ tmp_y = ([0.04, 0.09, 0.14, 0.19, 0.24, 0.29, ...
 		0.64, 0.69, 0.74, 0.79, 0.84, 0.89, ...
 		0.94, 0.99, 1.04, 1.09, 1.14, 1.19, ...
 		1.30, 1.40, 1.50, 1.60, 1.70, 1.80, ...
-		1.90, 2.00] + G_PIOT_OFFSET) ./ G_INCH_PER_FT;
+		1.90, 2.00] + G_PIOT_OFFSET) ./ G_INCH_PER_METER;
 tmp_V = [3.32305, 3.49870, 3.56802, 3.61611, 3.66251, 3.71333, ...
 		3.74977, 3.81280, 3.85159, 3.90400, 3.94449, 3.99117, ...
 		4.03673, 4.07139, 4.10173, 4.14230, 4.16222, 4.17706, ...
@@ -73,7 +75,7 @@ INDX = 1;
 BoundaryLayerExperiment.data_sz(INDX, 1) = length(tmp_y);
 BoundaryLayerExperiment.delta_y(INDX, 1:length(tmp_y)) = tmp_y; 
 BoundaryLayerExperiment.dynamic_pressure(INDX, 1:length(tmp_V)) = tmp_pressure;
-BoundaryLayerExperiment.free_stream_velocity(INDX, 1) = transducer_1(tmp_free_stream_voltage);
+BoundaryLayerExperiment.free_stream_velocity(INDX, 1) = sqrt(2 * transducer_1(tmp_free_stream_voltage) / G_DENSITY_AIR);
 BoundaryLayerExperiment.free_stream_y(INDX, 1) = tmp_free_stream_y;
 clear tmp_y tmp_V tmp_pressure tmp_free_stream_y tmp_free_stream_voltage;
 %%Boundary layer 2 experiment
@@ -84,7 +86,7 @@ tmp_y = ([0.04, 0.09, 0.14, 0.19, 0.24, 0.29, ...
 		0.64, 0.69, 0.74, 0.79, 0.84, 0.89, ...
 		0.94, 0.99, 1.04, 1.09, 1.14, 1.19, ...
 		1.30, 1.40, 1.50, 1.60, 1.70, 1.80, ...
-		1.90, 2.00] + G_PIOT_OFFSET) ./ G_INCH_PER_FT; %convert inches to ft
+		1.90, 2.00] + G_PIOT_OFFSET) ./ G_INCH_PER_METER; %convert inches to ft
 tmp_V = [3.32709, 3.67425, 3.78969, 3.87310, 3.93556, 4.01625, ...
  		4.06472, 4.13817, 4.17743, 4.21463, 4.30555, 4.36680, ... 
  		4.40841, 4.45396, 4.50337, 4.53512, 4.56987, 4.60782, ...
@@ -100,24 +102,56 @@ INDX = 2;
 BoundaryLayerExperiment.data_sz(INDX,1) = length(tmp_y);
 BoundaryLayerExperiment.delta_y(INDX, 1:length(tmp_y)) = tmp_y; 
 BoundaryLayerExperiment.dynamic_pressure(INDX, 1:length(tmp_V)) = tmp_pressure;
-BoundaryLayerExperiment.free_stream_velocity(INDX, 1) = transducer_2(tmp_free_stream_voltage);
+BoundaryLayerExperiment.free_stream_velocity(INDX, 1) = sqrt( 2 * transducer_2(tmp_free_stream_voltage)/ G_DENSITY_AIR );
 BoundaryLayerExperiment.free_stream_y(INDX, 1) = tmp_free_stream_y;
 clear tmp_y tmp_V tmp_pressure tmp_free_stream_y tmp_free_stream_voltage;
 
+%% Plot developed flows
+layer_fig = figure;
+BoundaryLayerExperiment.velocity(1,:) = sqrt(2 * BoundaryLayerExperiment.dynamic_pressure(1,:) / G_DENSITY_AIR);
+
+plot(BoundaryLayerExperiment.velocity(1,:), ...
+	BoundaryLayerExperiment.delta_y(1,:), 'kd-')
+hold on
+BoundaryLayerExperiment.velocity(2,:) = sqrt(2 * BoundaryLayerExperiment.dynamic_pressure(2,:) / G_DENSITY_AIR);
+plot(BoundaryLayerExperiment.velocity(2,:), ...
+	BoundaryLayerExperiment.delta_y(2,:), 'rd-')
+
+
 KAPPA = 0.38;
 BETA = 4.1;
-NU = G_DENSITY_AIR
+NU = G_VISCOSITY_AIR / G_DENSITY_AIR; %kinematic viscosity
 %%First plot is nondimensional ration of u/U_infinity vs y/sigma
-FrictionvVelocityFactory = @(U, Y)(@(U_t)( U / (U_t/KAPPA * log( Y * U_t/ NU) + BETA * U_t)))
+FrictionvVelocityFactory = @(U, Y)(@(X)( (1/KAPPA) * log(Y * X ./ NU) + BETA - (U * X.^-1)));
 
-for indx = 1:BoundaryLayerExperiment.data_sz(1)
-	tmp_velocity = 6;
-	tmp_f = FrictionvVelocityFactory( ...
-				BoundaryLayerExperiment.free_stream_velocity(1), ...
-				BoundaryLayerExperiment.delta_y(1));
-	%fzero(tmp_f, 0.04)
+BoundaryLayerExperiment.Cf = NaN * zeros(size(BoundaryLayerExperiment.velocity));
+
+for row = 1:2
+	for indx = 1:BoundaryLayerExperiment.data_sz(row)
+		tmp_f = FrictionvVelocityFactory( ...
+					BoundaryLayerExperiment.velocity(row, indx), ...
+					BoundaryLayerExperiment.delta_y(row,indx));
+
+		tmp_u_t = fzero(tmp_f, 1);
+		tau_s = tmp_u_t ^2 / G_DENSITY_AIR;
+		Cf = tau_s / (0.5 * G_DENSITY_AIR * BoundaryLayerExperiment.free_stream_velocity(1)^2);
+		BoundaryLayerExperiment.Cf(row,indx) = Cf;
+	end
+	%the location where we reach free stream velocity is different for each row
+	if row == 1
+		SLICE_END = 21;
+		fprintf('Full Speed\n')
+	elseif row == 2
+		SLICE_END = 26;
+		fprintf('Half Speed\n')
+	else
+		error('There are only two experiments');
+	end
+	%show the mean and standard deviation of the skin friction coeffcient
+	fprintf('\tMean C_f = %10.7f\n', mean(BoundaryLayerExperiment.Cf(row, 1:SLICE_END)));
+	fprintf('\tstddev C_f = %10.7f\n', std(BoundaryLayerExperiment.Cf(row, 1:SLICE_END)));	
+	fprintf('====================\n')		
 end
-
 
 
 %literature predictions using 1/7th power law
