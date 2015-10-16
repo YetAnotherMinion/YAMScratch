@@ -208,10 +208,10 @@ for row = 1:2
 			BoundaryLayerExperiment.free_stream_velocity(row);
 	plot(y_s, u_U, 'rd-');
 
-	xlabel('$\frac{y}{\sigma}$', 'interpreter', 'latex', 'FontSize', 16);
-	ylabel('$\frac{u}{U_{\infty}}$', 'interpreter', 'latex', 'FontSize', 18);
+	xlabel('Non-dimensional distance $\frac{y}{\sigma}$', 'interpreter', 'latex', 'FontSize', 18);
+	ylabel('Non-dimensional velocity $\frac{u}{U_{\infty}}$', 'interpreter', 'latex', 'FontSize', 16);
 	xlim([1e-2, 1.5])
-	title(title_txt)
+	title(title_txt, 'FontSize', 16)
 	l = legend('$1/7^{th}$ power law' ,'Experimental Non-dimensional Velocity');
 	set(l, 'Interpreter', 'latex', 'FontSize', 12)	
 
@@ -219,6 +219,7 @@ end
 
 %set(BL_fig(1),'visible','off')
 %set(BL_fig(2),'visible','off')
+
 clear Reynolds
 %clean up these temporary plotting variables
 clear tmp_x tmp_y x0 x1 x2
@@ -257,8 +258,11 @@ temp_fig = figure;
 plot(top_d, top_t, 'rd-')
 hold on
 plot(bot_d, bot_t, 'bd-')
-title('Thermocouple Temperature vs. Distance from Plate Leading Edge')
-legend('')
+title('Thermocouple Temperature vs. Distance from Plate Leading Edge', 'FontSize', 16)
+legend('Top Surface Temperatures', 'Bottom Surface Temperatures')
+xlabel('Distace from leading edge $m$', 'interpreter', 'latex', 'FontSize', 16)
+tmp_s = sprintf('Temperature %cC', char(176));
+ylabel(tmp_s, 'FontSize', 16)
 
 
 %%record the voltage and current to heaters at steady state
@@ -284,3 +288,7 @@ loglog(turbulent_Re, turbulent_stanton(turbulent_Re), 'k--');
 
 xlabel('Reynolds number $(Re_x)$', 'interpreter', 'latex', 'FontSize', 16);
 ylabel('Stanton number $(St_x)$', 'interpreter', 'latex', 'FontSize', 16);
+
+f = piecewise_interpolator([2,3], [5,6])
+
+f(3)
