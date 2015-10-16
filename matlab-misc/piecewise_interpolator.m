@@ -1,7 +1,7 @@
 %% piecewise_interpolator: function description
 function [out_func] = piecewise_interpolator(x_vals, y_vals)
 	%we expect the input x_vals to be sorted in increasing order
-	B = sort(x_vals)
+	B = sort(x_vals);
 	assert(all(x_vals == B))
 	%vectors should be same
 	assert(length(x_vals) == length(y_vals))

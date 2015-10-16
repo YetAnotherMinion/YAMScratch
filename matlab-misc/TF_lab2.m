@@ -16,8 +16,8 @@ G_PIOT_OFFSET = 0.0; %offset in inches
 %which is the zeroed when the bottom of the tube
 
 %convert plate dimensions from inches to ft
-plate_width = 10/12;
-plate_length = 60/12;
+plate_width = 10/ G_INCH_PER_METER;
+plate_length = 60/ G_INCH_PER_METER;
 
 %covert the measurement of voltage into lbf/ft^2
 raw_transducer_1 = @(V)(0.2026*V - 0.5142);
@@ -249,9 +249,12 @@ top_t = [31.7542, 	35.1604, 	38.43, 		44.1132 ,...
  38.719625, 39.155425,	39.258225,	40.155825, ...
  40.829625,	45.508425];
 
-bot_d = [0, 12, 36] ./ G_INCH_PER_METER;
-bot_t = [29.4546, 28.33143, 37.68503];
+bot_d = [0, 12, 36, 54] ./ G_INCH_PER_METER;
+bot_t = [29.4546, 28.33143, 37.68503, 37.68503]; % note last measurement is repeated
+%since the trailing edge thermocouple is dead
 %----------------------
+assert(length(top_t) == length(top_d));
+assert(length(bot_t) == length(bot_d));
 
 %%prepare plot of plate temperatures on top and bottom
 temp_fig = figure;
@@ -270,8 +273,9 @@ heater_voltage = 28.00; %units of Volts
 heater_current = 7.451; % units of Amps
 
 heater_power = heater_current * heater_voltage; %units of watts
+plate_Area = (plate_width * plate_length);
 
-Q_in = heater_power / (plate_width * plate_length); %units of W/ft^2
+Q_in = heater_power ; %units of W
 
 %%Second plot is Stanton number vs Reynolds number on log log plot
 G_PRANDTL_NUMBER = 0.7;
@@ -289,13 +293,35 @@ loglog(turbulent_Re, turbulent_stanton(turbulent_Re), 'k--');
 xlabel('Reynolds number $(Re_x)$', 'interpreter', 'latex', 'FontSize', 16);
 ylabel('Stanton number $(St_x)$', 'interpreter', 'latex', 'FontSize', 16);
 
-BackTemp = piecewise_interpolator([bot_d, 54], [bot_t, bot_t(end)])
+%use a linear interpolation scheme
+back_temp_func = piecewise_interpolator(bot_d, bot_t);
 
-tmp_x = 0.03:0.01:2;
+G_R_PLATE = 0.8575; % K/W
+G_BOLTZMAN_CONSTANT = 5.6704 * 10^-8;
+G_C_P = 1005.7; % J / (kg K)
+
+U_infinity = 11.93; %meters per second
+
+T_surr = 25.46; % convert C to K
+emissivity = 0.9;
+
+tmp_x = zeros(1, length(top_t));
 tmp_y = zeros(1, length(tmp_x));
-for k = 1:length(tmp_x)
-	tmp_y(k) = BackTemp(tmp_x(k));
+
+for indx = 1:length(top_t)
+	Q_rad = plate_Area * emissivity * G_BOLTZMAN_CONSTANT * ...
+			((top_t(indx) + 273.16)^4 - (T_surr + 273.16)^4);
+	T_back = back_temp_func(top_d(indx));
+	Q_backside = (top_t(indx) - T_back) / G_R_PLATE;
+	Q_conv = Q_in - Q_backside - Q_rad;
+	tmp_h = Q_conv / (plate_Area * (top_t(indx) - T_surr));
+	%the reynolds number
+	tmp_x(indx) = G_DENSITY_AIR * top_d(indx) * U_infinity / G_VISCOSITY_AIR;
+	tmp_y(indx) = tmp_h / (G_DENSITY_AIR * G_C_P * U_infinity);
 end
 
-figure
-plot(tmp_x, tmp_y)
+plot(tmp_x, tmp_y, 'rd')
+ylim([(9 * 1e-4),  (7 * 1e-3)])
+xlim([2*1e3, 2*1e6])
+title('Non-dimensional heat transfer coeffcient vs Reynolds Number', 'FontSize', 16)
+legend('Laminar Correlation', 'Turbulent Correlation', 'Experimental Data')
