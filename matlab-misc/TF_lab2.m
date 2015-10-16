@@ -139,7 +139,7 @@ for row = 1:2
 					BoundaryLayerExperiment.delta_y(row,indx));
 
 		tmp_u_t = fzero(tmp_f, 1);
-		tau_s = tmp_u_t ^2 / G_DENSITY_AIR;
+		tau_s = tmp_u_t ^2 * G_DENSITY_AIR;
 		Cf = tau_s / (0.5 * G_DENSITY_AIR * BoundaryLayerExperiment.free_stream_velocity(1)^2);
 		BoundaryLayerExperiment.Cf(row,indx) = Cf;
 	end
@@ -300,6 +300,7 @@ G_R_PLATE = 0.8575; % K/W
 G_BOLTZMAN_CONSTANT = 5.6704 * 10^-8;
 G_C_P = 1005.7; % J / (kg K)
 
+%taken from excel calculation of average pressure by Lucas
 U_infinity = 11.93; %meters per second
 
 T_surr = 25.46; % convert C to K
