@@ -289,6 +289,13 @@ loglog(turbulent_Re, turbulent_stanton(turbulent_Re), 'k--');
 xlabel('Reynolds number $(Re_x)$', 'interpreter', 'latex', 'FontSize', 16);
 ylabel('Stanton number $(St_x)$', 'interpreter', 'latex', 'FontSize', 16);
 
-f = piecewise_interpolator([2,3, 4], [5,8, 8])
+BackTemp = piecewise_interpolator([bot_d, 54], [bot_t, bot_t(end)])
 
-f(3.5)
+tmp_x = 0.03:0.01:2;
+tmp_y = zeros(1, length(tmp_x));
+for k = 1:length(tmp_x)
+	tmp_y(k) = BackTemp(tmp_x(k));
+end
+
+figure
+plot(tmp_x, tmp_y)
