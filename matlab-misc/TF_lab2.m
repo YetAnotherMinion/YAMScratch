@@ -289,6 +289,6 @@ loglog(turbulent_Re, turbulent_stanton(turbulent_Re), 'k--');
 xlabel('Reynolds number $(Re_x)$', 'interpreter', 'latex', 'FontSize', 16);
 ylabel('Stanton number $(St_x)$', 'interpreter', 'latex', 'FontSize', 16);
 
-f = piecewise_interpolator([2,3], [5,6])
+f = piecewise_interpolator([2,3, 4], [5,8, 8])
 
-f(3)
+f(3.5)

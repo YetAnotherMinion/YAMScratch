@@ -11,11 +11,24 @@ function [out_func] = piecewise_interpolator(x_vals, y_vals)
 
 	seven = 6;
 	function [out] = segment(target_x)
+		%only makes physical sense for a scalar
+		assert(isscalar(target_x))
 		if target_x < minimum || target_x > maximum
-			throw(MException('Foo:Bar', 'Some human-readable message'))
+			throw(MException('Interpolator:RangeError', 'Value not within interpolating range'))
 		end
-
-		out = seven;
+		%trivial cases
+		if target_x == minimum
+			out = y_vals(1);
+			return
+		elseif target_x == maximum
+			out = y_vals(end);
+			return
+		end
+		i_right = find(x_vals>target_x, 1);
+		i_left = find(x_vals<target_x);
+		i_left = i_left(end); %take the furthest right one that is less than
+		out = ( (y_vals(i_right) - y_vals(i_left)) * (target_x - x_vals(i_left)) / ...
+				(x_vals(i_right) - x_vals(i_left)) ) + y_vals(i_left);
 	end
 	out_func = @segment;
 
