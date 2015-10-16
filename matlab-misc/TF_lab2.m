@@ -117,6 +117,12 @@ BoundaryLayerExperiment.velocity(2,:) = sqrt(2 * BoundaryLayerExperiment.dynamic
 plot(BoundaryLayerExperiment.velocity(2,:), ...
 	BoundaryLayerExperiment.delta_y(2,:), 'rd-')
 
+xlabel('Velocity (m/s)', 'interpreter', 'latex', 'FontSize', 16);
+ylabel('Height above plate (m)', 'interpreter', 'latex', 'FontSize', 16);
+title('Isothermal Velocity Boundary Layers', 'FontSize', 16)
+legend('Flow From Full Speed Fan', 'Flow From Half Speed Fan', 'FontSize', 12)
+
+set(layer_fig,'visible','off')
 
 KAPPA = 0.38;
 BETA = 4.1;
@@ -141,33 +147,82 @@ for row = 1:2
 	if row == 1
 		SLICE_END = 21;
 		fprintf('Full Speed\n')
+
 	elseif row == 2
 		SLICE_END = 26;
 		fprintf('Half Speed\n')
 	else
 		error('There are only two experiments');
 	end
+	% we also want to reset the free stream velocity to the maximum we have seen,
+	% since we see the reynolds decreases as we get closer to the top wall of the
+	% wind tunnel
+	BoundaryLayerExperiment.free_stream_velocity(row) = BoundaryLayerExperiment.velocity(row, SLICE_END);
+	BoundaryLayerExperiment.free_stream_y = BoundaryLayerExperiment.delta_y(row, SLICE_END);
 	%show the mean and standard deviation of the skin friction coeffcient
-	fprintf('\tMean C_f = %10.7f\n', mean(BoundaryLayerExperiment.Cf(row, 1:SLICE_END)));
-	fprintf('\tstddev C_f = %10.7f\n', std(BoundaryLayerExperiment.Cf(row, 1:SLICE_END)));	
-	fprintf('====================\n')		
+	BoundaryLayerExperiment.Cf_mean(row, 1) = mean(BoundaryLayerExperiment.Cf(row, 1:SLICE_END));
+	BoundaryLayerExperiment.Cf_std(row, 1) = std(BoundaryLayerExperiment.Cf(row, 1:SLICE_END));
+	fprintf('\tSlice end is %d\n', SLICE_END);
+	fprintf('\tMean C_f = %10.7f\n', BoundaryLayerExperiment.Cf_mean(row,1));
+	fprintf('\tstddev C_f = %10.7f\n', BoundaryLayerExperiment.Cf_std(row, 1));	
+	fprintf('====================\n')
 end
+%clean up temporary variables used for this section
+clear SLICE_END tmp_u_t tmp_f Cf tau_s
 
 
-%literature predictions using 1/7th power law
+%%literature predictions using 1/7th power law
 x0 = 0;
 x1 = 0.1;
 x2 = 3;
 tmp_x = [linspace(x0, x1, 100), [linspace(x1, x2, 100)]];
 tmp_y = tmp_x .^ (1/7);
-BL_fig = figure;
-semilogx(tmp_x, tmp_y, 'k-');
-hold on
-%plot the physical upper limit of u/U_infinity
 
+BL_fig = [];
 
-xlabel('$\frac{y}{\sigma}$', 'interpreter', 'latex', 'FontSize', 16);
-ylabel('$\frac{u}{U_{\infty}}$', 'interpreter', 'latex', 'FontSize', 18);
+%%plot the physical upper limit of u/U_infinity
+
+%first compute the free stream reynold number
+for row = 1:2
+	BL_fig(row) = figure;
+	semilogx(tmp_x, tmp_y, 'k-');
+	hold on
+	X = 47.5 / G_INCH_PER_METER;
+	Reynolds = G_DENSITY_AIR * BoundaryLayerExperiment.free_stream_velocity(row) ...
+				* X / G_VISCOSITY_AIR;
+	%assue both rows are turbulent in free stream
+	sigma = 0.382 * X / (Reynolds^0.2);
+	if row == 1
+		SLICE_END = 21;
+		legend_txt = [];
+		title_txt = 'Non-dimensionalized Velocity Profile of Full Speed Fan';
+	elseif row == 2
+		SLICE_END = 26;
+		legend_txt = [''];
+		title_txt = 'Non-dimensionalized Velocity Profile of Half Speed Fan';
+	else
+		error('There are only two experiments');
+	end
+	y_s = BoundaryLayerExperiment.delta_y(row,1:SLICE_END) / sigma;
+	u_U = BoundaryLayerExperiment.velocity(row,1:SLICE_END) / ...
+			BoundaryLayerExperiment.free_stream_velocity(row);
+	plot(y_s, u_U, 'rd-');
+
+	xlabel('$\frac{y}{\sigma}$', 'interpreter', 'latex', 'FontSize', 16);
+	ylabel('$\frac{u}{U_{\infty}}$', 'interpreter', 'latex', 'FontSize', 18);
+	xlim([1e-2, 1.5])
+	title(title_txt)
+	l = legend('$1/7^{th}$ power law' ,'Experimental Non-dimensional Velocity');
+	set(l, 'Interpreter', 'latex', 'FontSize', 12)	
+
+end
+
+%set(BL_fig(1),'visible','off')
+%set(BL_fig(2),'visible','off')
+clear Reynolds
+%clean up these temporary plotting variables
+clear tmp_x tmp_y x0 x1 x2
+
 
 %%===============================================================
 
@@ -184,16 +239,31 @@ assert(length(tmp_P) == 5);
 
 % vv RECORD DATA HERE vv
 %----------------------------
-tmp_T = [];
-tmp_T = 1:32; %just to make the below work until data is recorded
+top_d = [0.125, 	0.5,		1.125, 		2.125, ...
+ 3.5, 		5.125, 		10.125, 	16, ...
+ 18, 		21, 		29, 		33, ...
+ 48,		54] ./ G_INCH_PER_METER;
+top_t = [31.7542, 	35.1604, 	38.43, 		44.1132 ,...
+ 45.1662, 	46.4592, 	49.36663, 	38.32623, ...
+ 38.719625, 39.155425,	39.258225,	40.155825, ...
+ 40.829625,	45.508425];
+
+bot_d = [0, 12, 36] ./ G_INCH_PER_METER;
+bot_t = [29.4546, 28.33143, 37.68503];
 %----------------------
-%remember that we dont use three thermocouples
-assert(length(tmp_T) == 32)
-thermocouple_map.temperature(1, G_USEABLE_THERMOCOUPLE_MASK) = tmp_T(:);
+
+%%prepare plot of plate temperatures on top and bottom
+temp_fig = figure;
+plot(top_d, top_t, 'rd-')
+hold on
+plot(bot_d, bot_t, 'bd-')
+title('Thermocouple Temperature vs. Distance from Plate Leading Edge')
+legend('')
+
 
 %%record the voltage and current to heaters at steady state
-heater_voltage = NaN; %units of Volts
-heater_current = NaN; % units of Amps
+heater_voltage = 28.00; %units of Volts
+heater_current = 7.451; % units of Amps
 
 heater_power = heater_current * heater_voltage; %units of watts
 
