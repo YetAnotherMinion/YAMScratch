@@ -1,6 +1,6 @@
 YAMScratch
 ==========
-[![Build Status](https://travis-ci.org/YetAnotherMinion/YAMScratch.svg?branch=master)](https://travis-ci.org/YetAnotherMinion/FEP) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/YetAnotherMinion/YAMScratch?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Build Status](https://travis-ci.org/YetAnotherMinion/YAMScratch.svg?branch=master)](https://travis-ci.org/YetAnotherMinion/YAMScratch) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/YetAnotherMinion/YAMScratch?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Code scratch pad using GitHub as upstream git server for free. Nothing important. These aren't the droids you're looking for.
 
