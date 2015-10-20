@@ -1,5 +1,5 @@
 import sys
-
+#number of testcases is integer on first line of input
 N = int(raw_input())
 for _ in xrange(0, N):
 	line = raw_input().split()
