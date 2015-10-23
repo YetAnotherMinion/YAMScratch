@@ -82,8 +82,6 @@ TEST_F(BigIntTest, AddOnStack) {
 	big_int_from_str(B, const_cast<char*>(b));
 	/*hold what the result should be*/
 	big_int_from_str(C, const_cast<char*>(c));
-	size_t nbytes;
-	nbytes = 0;
 	/*test that operation is associative*/
 	D = big_int_add_stack(A, B);
 	E = big_int_add_stack(B, A);
@@ -105,8 +103,6 @@ TEST_F(BigIntTest, AddOnHeap) {
 	big_int_from_str(B, const_cast<char*>(b));
 	/*hold what the result should be*/
 	big_int_from_str(C, const_cast<char*>(c));
-	size_t nbytes;
-	nbytes = 0;
 	/*test that operation is associative*/
 	big_int_add_heap(A, B, D);
 	big_int_add_heap(B, A, E);
@@ -128,8 +124,6 @@ TEST_F(BigIntTest, LessThan) {
 	B = newBigInt;
 	big_int_from_str(A, const_cast<char*>(aa));
 	big_int_from_str(B, const_cast<char*>(bb));
-	size_t nbytes;
-	nbytes = 0;
 	ASSERT_EQ(1, big_int_less_than(B, A));
 	ASSERT_EQ(0, big_int_less_than(A, B));
 	ASSERT_EQ(0, big_int_less_than(A, A));
@@ -147,8 +141,6 @@ TEST_F(BigIntTest, Equals) {
 	B = newBigInt;
 	big_int_from_str(A, const_cast<char*>(aa));
 	big_int_from_str(B, const_cast<char*>(bb));
-	size_t nbytes;
-	nbytes = 0;
 	ASSERT_EQ(1, big_int_equality(A, A));
 	ASSERT_EQ(0, big_int_equality(A, B));
 	ASSERT_EQ(0, big_int_equality(B, A));
