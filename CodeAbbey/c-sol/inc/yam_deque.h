@@ -7,6 +7,7 @@ extern "C" {
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #define MIN_PAGE_SIZE 512
 #define PAGE_CELLS(TYPE)														\
@@ -38,6 +39,7 @@ extern "C" {
 		first_page->page = (TYPE *)malloc( PAGE_CELLS(TYPE) * sizeof (TYPE));\
 		if(first_page->page == NULL) {										\
 			free(first_page);												\
+			free(head);														\
 			return NULL;													\
 		}																	\
 		first_page->prev = NULL;											\
@@ -75,39 +77,39 @@ extern "C" {
 		return tmp;
 	}
 	*/
-	// static TYPE* at_deque_##TYPE(deque_##TYPE* head, unsigned long index) {
-	// 	/*returns a reference to element at index, if the index is out of
-	// 	* bounds, returns NULL*/
-	// 	if(index < head->_size) {
-	// 		unsigned long tmp_offset, page_offset, ii;
-	// 		/*index is in first half of deque*/
-	// 		if(index <= (head->_size / 2)) {
-	// 			tmp_offset = PAGE_CELLS(TYPE) - head->_end_offset;
-	// 			if(index < tmp_offset) {
-	// 				/*element we seek is in beginning page*/
-	// 				return head->begin->page + (head->_end_offset + index);
-	// 			}
-	// 			/*find the new offset from one page past the beginning page*/
-	// 			tmp_offset = index - tmp_offset;
-	// 			page_offset = tmp_offset / PAGE_CELLS(TYPE);
-	// 			/*now tmp offset is the correct offset for one page*/
-	// 			tmp_offset = tmp_offset % PAGE_CELLS(TYPE);
-	// 			/*move to that page*/
-	// 			deque_node_##TYPE * cursor;
-	// 			cursor = head->begin;
-	// 			/*walk cursor up linked list of pages*/
-	// 			for(ii = 0; ii < page_offset; ++ii){
-	// 				cursor = cursor->next;
-	// 			}
-	// 			return cursor->page + tmp_offset;
-	// 		} else {
-	// 			/*check that element is not on last page*/
-	// 			tmp_offset = head->_size - head->_end_offset;
-	// 		}
-	// 	} else {
-	// 		return NULL;
-	// 	}
-	// }
+	static TYPE* at_deque_##TYPE(deque_##TYPE* head, unsigned long index) {
+		/*returns a pointer to element at index, if the index is out of
+		* bounds, returns NULL, and sets errno to EINVAL*/
+		if(index < head->_size) {
+			unsigned long tmp_offset, page_offset, ii;
+			/*index is in first half of deque*/
+			if(index <= (head->_size / 2)) {
+				tmp_offset = PAGE_CELLS(TYPE) - head->_end_offset;
+				if(index < tmp_offset) {
+					/*element we seek is in beginning page*/
+					return head->begin->page + (head->_end_offset + index);
+				}
+				/*find the new offset from one page past the beginning page*/
+				tmp_offset = index - tmp_offset;
+				page_offset = tmp_offset / PAGE_CELLS(TYPE);
+				/*now tmp offset is the correct offset for one page*/
+				tmp_offset = tmp_offset % PAGE_CELLS(TYPE);
+				/*move to that page*/
+				deque_node_##TYPE * cursor;
+				cursor = head->begin;
+				/*walk cursor up linked list of pages*/
+				for(ii = 0; ii < page_offset; ++ii){
+					cursor = cursor->next;
+				}
+				return cursor->page + tmp_offset;
+			} else {
+				/*check that element is not on last page*/
+				tmp_offset = head->_size - head->_end_offset;
+			}
+		} else {
+			return NULL;
+		}
+	}
 
 #endif
 
@@ -119,9 +121,7 @@ extern "C" {
 #define deque_pop_back(TYPE, ptr) pop_back_dequeu_##TYPE(ptr)
 #define deque_pop_front(TYPE, ptr) pop_front_deque_##TYPE(ptr)
 #define deque_clear(TYPE, ptr) clear_deque_##TYPE(ptr)
-/*
 #define deque_at(TYPE, ptr, index) at_deque_##TYPE(ptr, index)
-*/
 
 #ifdef __cplusplus
 }
