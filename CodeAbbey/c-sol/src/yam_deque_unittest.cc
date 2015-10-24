@@ -40,6 +40,11 @@ TEST(DequeTest, PageSize) {
 	EXPECT_EQ(1, PAGE_CELLS(dummy1024));
 }
 
+/*
+* NOTE: because we are using macros to implement type genericity,
+* we cannot use TYPED_TEST because the macro will just expand to
+* error: unknown type name 'deque_TypeParam'
+*/
 TEST(DequeTest, NewDeque_uint8) {
 	Deque(uint8_t)* d;
 	d = (Deque(uint8_t)*)newDeque(uint8_t);

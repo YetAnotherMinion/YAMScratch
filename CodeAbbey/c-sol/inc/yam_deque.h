@@ -30,14 +30,18 @@ extern "C" {
 	} deque_##TYPE;															\
 	static deque_##TYPE * init_deque_##TYPE() {								\
 		deque_##TYPE* head;													\
+		errno = 0;															\
 		head = (deque_##TYPE *)malloc(sizeof (*head));						\
-		if(head == NULL) return NULL;										\
+		if(head == NULL || errno != 0) return NULL;							\
 		/*create at least one page*/										\
 		deque_node_##TYPE* first_page;										\
 		first_page = (deque_node_##TYPE *)malloc(sizeof (*first_page));		\
-		if(first_page == NULL) return NULL;									\
+		if(first_page == NULL || errno != 0) {								\
+			free(head);														\
+			return NULL;													\
+		}																	\
 		first_page->page = (TYPE *)malloc( PAGE_CELLS(TYPE) * sizeof (TYPE));\
-		if(first_page->page == NULL) {										\
+		if(first_page->page == NULL || errno != 0) {						\
 			free(first_page);												\
 			free(head);														\
 			return NULL;													\
@@ -50,14 +54,26 @@ extern "C" {
 		head->_end_offset = 0;												\
 		head->_size = 0;													\
 		return head;														\
+	}																		\
+	static void destroy_deque_##TYPE(deque_##TYPE * head) {					\
+		/*walk along the linked list freeing each page and then node*/		\
+		deque_node_##TYPE* cursor;											\
+		cursor = head->end;													\
+		/*mark the end pointer as invalid*/									\
+		head->end = NULL;													\
+		while(cursor != NULL) {												\
+			/*@WARNING @TO-DO free is assumed to always succede, I am not	\
+			* really sure how to handle the case when free fails*/			\
+			free(cursor->page);												\
+			deque_node_##TYPE* tmp_node;									\
+			tmp_node = cursor;												\
+			cursor = cursor->prev;											\
+			free(tmp_node);													\
+		}																	\
+	}																		\
+	static void clear_deque_##TYPE(deque_##TYPE * head) {					\
 	}
 	/*
-	static void destroy_deque_##TYPE(deque_##TYPE * head) {
-
-	}
-	static void clear_deque_##TYPE(deque_##TYPE * head) {
-
-	}
 	static void push_back_deque_##TYPE(deque_##TYPE * head, TYPE val) {
 
 	}
@@ -77,39 +93,39 @@ extern "C" {
 		return tmp;
 	}
 	*/
-	static TYPE* at_deque_##TYPE(deque_##TYPE* head, unsigned long index) {
-		/*returns a pointer to element at index, if the index is out of
-		* bounds, returns NULL, and sets errno to EINVAL*/
-		if(index < head->_size) {
-			unsigned long tmp_offset, page_offset, ii;
-			/*index is in first half of deque*/
-			if(index <= (head->_size / 2)) {
-				tmp_offset = PAGE_CELLS(TYPE) - head->_end_offset;
-				if(index < tmp_offset) {
-					/*element we seek is in beginning page*/
-					return head->begin->page + (head->_end_offset + index);
-				}
-				/*find the new offset from one page past the beginning page*/
-				tmp_offset = index - tmp_offset;
-				page_offset = tmp_offset / PAGE_CELLS(TYPE);
-				/*now tmp offset is the correct offset for one page*/
-				tmp_offset = tmp_offset % PAGE_CELLS(TYPE);
-				/*move to that page*/
-				deque_node_##TYPE * cursor;
-				cursor = head->begin;
-				/*walk cursor up linked list of pages*/
-				for(ii = 0; ii < page_offset; ++ii){
-					cursor = cursor->next;
-				}
-				return cursor->page + tmp_offset;
-			} else {
-				/*check that element is not on last page*/
-				tmp_offset = head->_size - head->_end_offset;
-			}
-		} else {
-			return NULL;
-		}
-	}
+//	static TYPE* at_deque_##TYPE(deque_##TYPE* head, unsigned long index) {
+//		/*returns a pointer to element at index, if the index is out of
+//		* bounds, returns NULL, and sets errno to EINVAL*/
+//		if(index < head->_size) {
+//			unsigned long tmp_offset, page_offset, ii;
+//			/*index is in first half of deque*/
+//			if(index <= (head->_size / 2)) {
+//				tmp_offset = PAGE_CELLS(TYPE) - head->_end_offset;
+//				if(index < tmp_offset) {
+//					/*element we seek is in beginning page*/
+//					return head->begin->page + (head->_end_offset + index);
+//				}
+//				/*find the new offset from one page past the beginning page*/
+//				tmp_offset = index - tmp_offset;
+//				page_offset = tmp_offset / PAGE_CELLS(TYPE);
+//				/*now tmp offset is the correct offset for one page*/
+//				tmp_offset = tmp_offset % PAGE_CELLS(TYPE);
+//				/*move to that page*/
+//				deque_node_##TYPE * cursor;
+//				cursor = head->begin;
+//				/*walk cursor up linked list of pages*/
+//				for(ii = 0; ii < page_offset; ++ii){
+//					cursor = cursor->next;
+//				}
+//				return cursor->page + tmp_offset;
+//			} else {
+//				/*check that element is not on last page*/
+//				tmp_offset = head->_size - head->_end_offset;
+//			}
+//		} else {
+//			return NULL;
+//		}
+//	}
 
 #endif
 
