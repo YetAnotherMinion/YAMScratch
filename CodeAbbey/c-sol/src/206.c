@@ -1,4 +1,4 @@
-#define _GNU_SOURCE
+#define _GNU_SOURCE /*for getline*/
 #include <errno.h> /*for errno*/
 #include <stdio.h> /*provided perror*/
 #include <stdlib.h> /*provides exit*/
@@ -7,8 +7,8 @@
 #include <assert.h>
 
 #include "code_abbey_utility.h"
-/*work around until detection macro*/
-#define IS_LITTLE_ENDIAN 1
+
+#define IS_LITTLE_ENDIAN (*(uint16_t *)"\0\xff" > 0x100)
 #define FIVE_BIT_MASK 0x1f
 #define NUM_CHUNK_BITS 5
 #define BASE32_ALPHABET "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
@@ -21,8 +21,8 @@ size_t encode32_buffer(char* input, size_t M, char** output, size_t* N) {
 	* this output buffer should be freed by user after failure if not NULL, 
 	* which signifies the error was caught and handled internally
 	*
-	*  Alternatively, *output can be a pointer to a malloc(3)-allocated
-	* buffer M bytes in size, if the buffer is not large enough to
+	* Alternatively, *output can be a pointer to a malloc(3)-allocated
+	* buffer N bytes in size, if the buffer is not large enough to
 	* hold the base32 encoding, the buffer will be resized with realloc(3),
 	* updating *output and *N.
 	*
@@ -33,6 +33,7 @@ size_t encode32_buffer(char* input, size_t M, char** output, size_t* N) {
 	* On sucess encode32_buffer will return the number of bytes written to the
 	* output buffer, not including the terminating '\0'
 	*/
+
 	/*sanity checks*/
 	if(input == NULL) return 0;
 
@@ -40,6 +41,7 @@ size_t encode32_buffer(char* input, size_t M, char** output, size_t* N) {
 	unsigned long ii, jj;
 	/*compute the required size of conversion buffer*/
 	size_t conv_buff_sz, out_buff_sz, out_bytes_written;
+	out_bytes_written = 0;
 	unsigned padding_bytes;
 	padding_bytes = (M % 5) ? 5 - (M % 5): 0;
 	conv_buff_sz = M + padding_bytes;
@@ -55,15 +57,19 @@ size_t encode32_buffer(char* input, size_t M, char** output, size_t* N) {
 			return 0;
 		}
 	} else if(*N == 0) {
-		realloc(output, out_buff_sz);
+		char* tmp_ptr;
+		tmp_ptr = realloc(output, out_buff_sz);
+		*output = tmp_ptr;
 		*N = out_buff_sz;
 	} else if(out_buff_sz > *N) {
-		realloc(*output, out_buff_sz);
+		char* tmp_ptr;
+		tmp_ptr = realloc(*output, out_buff_sz);
+		*output = tmp_ptr;
 		*N = out_buff_sz;
 	}
 	/*glom all of the errno checks for the preceding allocations here*/
 	if(errno != 0) {
-		return 0;
+		return 0; /*indicating that zero bytes were written*/
 	}
 
 	/*if the system is little endian, low adresses hold most significant
@@ -100,7 +106,6 @@ size_t encode32_buffer(char* input, size_t M, char** output, size_t* N) {
 		for(ii = 0; ii < padding_bytes; ++ii) {
 			conv_buff[ii] = '0' + padding_bytes;
 		}
-		char* tmp_cursor;
 		for(ii = 0; ii < M; ++ii) {
 			conv_buff[ii+padding_bytes] = input[M - 1 - ii];
 		}
@@ -121,7 +126,7 @@ size_t encode32_buffer(char* input, size_t M, char** output, size_t* N) {
 	conv_cursor = conv_buff;
 
 	if(IS_LITTLE_ENDIAN) {
-		/* Little endian writes tot buffer in reverse*/
+		/* Little endian writes to buffer in reverse*/
 		out_cursor = *output + (n_chunks * 8);
 		*out_cursor = '\0'; /*null terminate the output buffer*/
 		out_cursor -= 8; /*move cursor back into position*/
@@ -134,6 +139,7 @@ size_t encode32_buffer(char* input, size_t M, char** output, size_t* N) {
 				tmp >>= (NUM_CHUNK_BITS * (7 - jj));
 				assert(tmp < 32);
 				*out_cursor++ = base32[tmp];
+				out_bytes_written++;
 			}
 			/*advance the buffer pointer by 5 bytes for each chunk*/
 			conv_cursor+= NUM_CHUNK_BITS;
@@ -159,6 +165,7 @@ size_t encode32_buffer(char* input, size_t M, char** output, size_t* N) {
 				assert(tmp < 32);
 				// printf("key = %u\n", tmp);
 				*out_cursor++ = base32[tmp];
+				out_bytes_written++;
 			}
 			/*advance the buffer pointer by 5 bytes for each chunk*/
 			conv_cursor+= NUM_CHUNK_BITS;
@@ -167,19 +174,33 @@ size_t encode32_buffer(char* input, size_t M, char** output, size_t* N) {
 		*out_cursor = '\0';
 	}
 	free(conv_buff);
-	return 0;
+	return out_bytes_written;
 }
 
-int decode32_buffer(char* input, size_t M, char** output, size_t* N) {
+char alphabet_key_lookup(char key) {
+	/*The choice of alphabet for base32 can allow for some efficiency
+	* in decoding if there is structure in the alphabet. This routine
+	* provides a generic key look up f*/
+	return 'a';
+}
+
+char in_alphabet(char key) {
+	char* base32 = BASE32_ALPHABET;
+
+
+	return 'f';
+}
+
+size_t decode32_buffer(char* input, size_t M, char** output, size_t* N) {
 	/*sanity check*/
-	if(M == 0) {
+	if(input == NULL) return -1;
+	if(0 == M) {
 		*N = 0;
 		*output = NULL;
-		return 0;
+		return 0; /*returning the number of bytes written*/
 	}
-	if(input == NULL) return -1;
-
-	char* base32 = BASE32_ALPHABET;
+	for(size_t ii = 0; ii < M; )
+	
 
 	return 0;
 }
@@ -219,8 +240,8 @@ int main(int argc, char* argv[]) {
 		/*encode lines 1, 3, 5...*/
 		if((ii%2)) {
 			/*account for newlines*/
-			printf("DECODE_PLACEHOLDER ");
-			//decode32_buffer(lineptr, bytes_read - 1, &out_buffer, &out_buff_sz);
+			printf("**DECODE_PLACEHOLDER** ");
+			decode32_buffer(lineptr, bytes_read - 1, &out_buffer, &out_buff_sz);
 		} else {
 			encode32_buffer(lineptr, bytes_read - 1, &out_buffer, &out_buff_sz);
 			printf("%s ", out_buffer);
