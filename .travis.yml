@@ -26,13 +26,16 @@ before_install:
 
 install:
   - git clone https://github.com/YetAnotherMinion/googletest.git /tmp/googletest
+  - git clone https://github.com/YetAnotherMinion/testcases.git /tmp/testcases
 
 #export some environmental variables
 before_script:
   - mkdir c-misc/DS\ projects/obj
   - mkdir c-misc/DS\ projects/bin
 
-script: make -C ./c-misc/DS\ projects
+script: 
+  - make -C ./c-misc/DS\ projects
+  - ./CodeAbbey/test_solutions.sh /tmp/testcases/CodeAbbey
 
 notifications:
   webhooks:

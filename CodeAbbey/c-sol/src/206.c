@@ -11,6 +11,13 @@
 #define IS_LITTLE_ENDIAN (*(uint16_t *)"\0\xff" > 0x100)
 #define FIVE_BIT_MASK 0x1f
 #define NUM_CHUNK_BITS 5
+/* WARNING: When changing the alphabet used, also change the
+* functions used to decode the alphabet, which are intended to
+* be optimized for the specific alphabet used. Changing the alphabet
+* without changing these functions:
+*    char in_alphabet(char key)
+*    char alphabet_key_lookup(char key)
+*/
 #define BASE32_ALPHABET "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
 
 size_t encode32_buffer(char* input, size_t M, char** output, size_t* N) {
@@ -28,7 +35,7 @@ size_t encode32_buffer(char* input, size_t M, char** output, size_t* N) {
 	*
 	* The end result of a call to encode32_buffer() is that *output and *N
 	* have been updated to reflect the output buffer address and buffer size
-	* respetively.
+	* respectively.
 	*
 	* On sucess encode32_buffer will return the number of bytes written to the
 	* output buffer, not including the terminating '\0'
@@ -72,7 +79,7 @@ size_t encode32_buffer(char* input, size_t M, char** output, size_t* N) {
 		return 0; /*indicating that zero bytes were written*/
 	}
 
-	/*if the system is little endian, low adresses hold most significant
+	/*if the system is little endian, low adresses hold least significant
 	* therefore we place input buffer into conversion directly aligned
 	* so that aliasing conv_buff to uint64_t* will allow reading off
 	* first 5 bit chunks using mask 0x1f 
@@ -192,6 +199,27 @@ char in_alphabet(char key) {
 }
 
 size_t decode32_buffer(char* input, size_t M, char** output, size_t* N) {
+	/** decode32_buffer converts base32 encoded char buffer to binary
+	* octets
+	* 
+	* If *output is set to NULL and *N is set to 0 before call, then
+	* decode32_buffer() will allocate a buffer to store the decoded output,
+	* this output buffer should be freed by user after failure if not NULL, 
+	* which signifies the error was caught and handled internally
+	*
+	* Alternatively, *output can be a pointer to a malloc(3)-allocated
+	* buffer N bytes in size, if the buffer is not large enough to
+	* hold the binary octets, the buffer will be resized with realloc(3),
+	* updating *output and *N.
+	*
+	* The end result of a call to decode32_buffer() is that *output and *N
+	* have been updated to reflect the output buffer address and buffer size
+	* respectively.
+	*
+	* On sucess decode32_buffer will return the number of bytes written to the
+	* output buffer, not including the terminating '\0'
+	*/
+
 	/*sanity check*/
 	if(input == NULL) return -1;
 	if(0 == M) {
@@ -199,7 +227,9 @@ size_t decode32_buffer(char* input, size_t M, char** output, size_t* N) {
 		*output = NULL;
 		return 0; /*returning the number of bytes written*/
 	}
-	for(size_t ii = 0; ii < M; )
+	for(size_t ii = 0; ii < M; ++ii) {
+
+	}
 	
 
 	return 0;

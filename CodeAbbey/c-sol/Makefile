@@ -9,7 +9,7 @@ CXX = clang++
 export OMPI_CXX=clang++
 export OMPI_CC=clang
 #-Werror
-CFLAGS = -Wall -Wextra --pedantic-errors -g -std=c99
+CFLAGS = -Wall -Wextra --pedantic-errors -g -std=c11
 #add option to include mpi flags
 MPICC_CFLAGS= $(CFLAGS)
 MPICC_CFLAGS+= $(shell mpicc -showme:compile)
@@ -21,7 +21,7 @@ LIBS = -L $(LDIR)
 
 # Points to the root of Google Test, relative to where this file is.
 # Remember to tweak this if you move this file.
-GTEST_DIR =  ~/Documents/GitHub/googletest
+GTEST_DIR =  ~/GitLab/googletest
 
 # Where to find user code.
 USER_DIR = $(GTEST_DIR)/samples
