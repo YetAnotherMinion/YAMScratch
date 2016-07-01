@@ -70,3 +70,8 @@ main3.cpp
 
 
 pde.m
+
+
+# Rust
+CodeAbbey/rust-sol/target*
+Cargo.lock

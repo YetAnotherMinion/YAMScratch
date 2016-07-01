@@ -1,0 +1,10 @@
+[package]
+name = "rust-sol"
+version = "0.1.0"
+authors = ["YetAnotherMinion <yetanotherminion@gmail.com>"]
+
+[dependencies]
+
+[[bin]]
+name = "1-sol"
+path = "src/1.rs"
