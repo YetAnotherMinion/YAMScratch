@@ -8,3 +8,7 @@ authors = ["YetAnotherMinion <yetanotherminion@gmail.com>"]
 [[bin]]
 name = "1-sol"
 path = "src/1.rs"
+
+[[bin]]
+name = "2-sol"
+path = "src/2.rs"
