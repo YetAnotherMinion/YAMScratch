@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
 const char *argp_program_bug_address = "yetanotherminion@gmail.com";
 const char *argp_program_version = 
 "YAM Slicer, version 0.1 -devel (x86_64-redhat-linux-gnu)\n\
-Copyright (C) 2015 Isaiah Bell\n\
+Copyright (C) 2016 Th!nk Inc\n\
 License DWTFYWEFM: Do What The Fuck You Want Except For Microsoft\n\
 \n\
 This is free software; you are free to change and redistribute it.\n\
