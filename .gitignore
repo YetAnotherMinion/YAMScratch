@@ -4,6 +4,9 @@
 *.dat
 *.out
 
+# ignore generated makefile configuration
+config.mk
+
 #hide the sublime packages
 *.sublime-package*
 

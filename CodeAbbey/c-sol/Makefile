@@ -1,11 +1,14 @@
-BIN = bin
-SRC = src
-OBJ = obj
-INC = inc
-LDIR = lib
+CONFIG?=config.mk
+include $(CONFIG)
 
-CC = gcc
-CXX = clang++
+BIN ?= bin
+SRC ?= src
+OBJ ?= obj
+INC ?= inc
+LDIR ?= lib
+
+CC ?= gcc
+CXX ?= clang++
 export OMPI_CXX=clang++
 export OMPI_CC=clang
 #-Werror
@@ -19,10 +22,6 @@ MPICC_LDFLAGS+= $(shell mpicc -showme:link)
 
 LIBS = -L $(LDIR)
 
-# Points to the root of Google Test, relative to where this file is.
-# Remember to tweak this if you move this file.
-GTEST_DIR =  ~/GitLab/googletest
-
 # Where to find user code.
 USER_DIR = $(GTEST_DIR)/samples
 
@@ -34,7 +33,7 @@ CPPFLAGS += -isystem $(GTEST_DIR)/include -isystem $(GTEST_DIR)
 # Flags passed to the C++ compiler.
 # 	Unused function is turned off because of the macros which implement generic types
 # 	define everythin even if we only want to use one
-CXXFLAGS += -g -Wall -Wextra -pthread --pedantic-errors -Wno-unused-function -Wc++-compat -Wextern-c-compat
+CXXFLAGS += -g -Wall -Wextra -pthread --pedantic-errors -Wno-unused-function -Wc++-compat
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.

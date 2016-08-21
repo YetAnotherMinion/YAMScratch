@@ -1,0 +1,29 @@
+#!/bin/bash
+
+self=$(basename "$0")
+DEP_DIR=
+
+case $# in
+    1)
+        DEP_DIR=$(readlink -f $1)
+        ;;
+    *)
+        echo "usage: ${self} <install_prefix>"
+        exit 0
+        ;;
+esac
+
+echo -e "
+# by default \$CC is cc and \$CXX is g++ 
+# setting environment variables only overrides defaults, need to 'make -e' to
+# override
+ifeq (\$(CXX), g++)
+	MPIFLAGS+=--std=c++0x -Wno-long-long
+endif
+ifeq (\$(CXX), clang++)
+	MPIFLAGS+=-Wno-c++11-long-long
+endif
+
+GTEST_DIR=${DEP_DIR}/src/googletest
+"
+
