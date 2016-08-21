@@ -37,7 +37,7 @@ mod handlers;
 
 // Then we _import_ the things needed specifically for this module
 // starting with iron, its ecosystem, and finally common libraries
-use iron::preplude::*
+use iron::prelude::*;
 use staticfile::Static;
 use mount::Mount;
 
@@ -65,8 +65,8 @@ fn main() {
     //   METHOD "URL/:keyword" => HANDLER
     // ```
     mount.mount("/hello_world/", router!(
-            get "/:value" => hello_world,
-            get "/deeper" => rick_roll
+            get "/:value" => handlers::hello_world,
+            get "/deeper" => handlers::rick_roll
     ));
 
     // Serve static files from the static/ folder.

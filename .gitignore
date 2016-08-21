@@ -74,4 +74,5 @@ pde.m
 
 # Rust
 CodeAbbey/rust-sol/target*
+rust-swagger-petstore/target*
 Cargo.lock
