@@ -1,0 +1,21 @@
+[package]
+name = "rust-swagger-petstore"
+version = "0.1.0"
+authors = ["YetAnotherMinion <yam@thinkalexandria.com>"]
+
+[dependencies]
+iron = "*"
+urlencoded = "*"
+logger = "*"
+router = "*"
+staticfile = "*"
+rustc-serialize = "*"
+hyper = "*"
+url = "*"
+env_logger = "*"
+time = "*"
+mime = "*"
+mount = "*"
+rand = "*"
+postgres = "*"
+
