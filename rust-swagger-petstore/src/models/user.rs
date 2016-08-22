@@ -1,10 +1,10 @@
 pub struct User {
    id: i64,
    username: String,
-   firstName: String,
-   lastName: String,
+   first_name: String,
+   last_name: String,
    email: String,
    password: String,
    phone: String,
-   userStatus: i64
+   user_status: i64
 }

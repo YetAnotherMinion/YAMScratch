@@ -33,7 +33,9 @@ extern crate time;
 // Next, _register_ the module of this crate here,
 // We are putting every handler in the same file for now
 mod handlers;
+mod models;
 
+use models::User;
 
 // Then we _import_ the things needed specifically for this module
 // starting with iron, its ecosystem, and finally common libraries
@@ -64,19 +66,35 @@ fn main() {
     // ```
     //   METHOD "URL/:keyword" => HANDLER
     // ```
-    mount.mount("/hello_world/", router!(
-            get "/:value" => handlers::hello_world,
-            get "/deeper" => handlers::rick_roll
+    mount.mount("/", router!(
+            post    "/pets" => handlers::hello_world,
+            put     "/pets" => handlers::hello_world,
+            get     "/pets/findByStatus" => handlers::rick_roll,
+            get     "/pets/findByTags" => handlers::rick_roll,
+            get     "/pets/:pet_id" => handlers::rick_roll,
+            post    "/pets/:pet_id" => handlers::rick_roll,
+            delete  "/pets/:pet_id" => handlers::rick_roll,
+            post    "/stores/order" => handlers::rick_roll,
+            get     "/store/order/:order_id" => handlers::rick_roll,
+            delete  "/store/order/:order_id" => handlers::rick_roll,
+            post    "/users" => handlers::rick_roll,
+            post    "/users/createWithArray" => handlers::rick_roll,
+            post    "/users/createWithList" => handlers::rick_roll,
+            get     "/users/login" => handlers::rick_roll,
+            get     "/users/logout" => handlers::rick_roll,
+            get     "/users/:username" => handlers::rick_roll,
+            put     "/users/:username" => handlers::rick_roll,
+            delete  "/users/:username" => handlers::rick_roll,
     ));
 
     // Serve static files from the static/ folder.
     // *Note*: we have to define each subfolder seperately as Static _does not_
     // serve recursively as of August 20 2016
-    mount.mount("/", Static::new(Path::new("static")));
+    //mount.mount("/", Static::new(Path::new("static")));
 
     // Send a message to the terminal, letting user know we are coming up
     warn!("Server running at 8080");
 
     // Start serving the routes define on port 8080 on all interfaces
-    Iron::new(mount).http("0.0.0.0:8080").unwrap();
+    Iron::new(mount).http("0.0.0.0:8090").unwrap();
 }
