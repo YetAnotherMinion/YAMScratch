@@ -1,0 +1,6 @@
+[package]
+name = "slicer"
+version = "0.1.0"
+authors = ["YetAnotherMinion <yam@thinkalexandria.com>"]
+
+[dependencies]

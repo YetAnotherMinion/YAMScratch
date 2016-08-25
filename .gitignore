@@ -1,3 +1,7 @@
+# ignore editor files
+*.swp
+
+# ignore C binary output
 *.o
 *.exe
 *.class
@@ -76,6 +80,7 @@ pde.m
 
 
 # Rust
-CodeAbbey/rust-sol/target*
-rust-swagger-petstore/target*
+CodeAbbey/rust-sol/target/
+rust-swagger-petstore/target/
+python-misc/slicer/target/
 Cargo.lock
