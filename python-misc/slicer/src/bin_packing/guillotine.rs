@@ -15,11 +15,13 @@ impl GuillotineNode {
         }
     }
 
-//    pub fn self::new(x: usize, y: usize, u: Box<GuillotineNode>,
-//                     r: Box<GuillotineNode>) -> GuillotineNode {
-//        GuilltineNode {
-//            x0: x,
-//            y0: y,
-//
-//    }
+    pub fn steve(x: usize, y: usize, u: Box<GuillotineNode>,
+                     r: Box<GuillotineNode>) -> GuillotineNode {
+        GuillotineNode {
+            x0: x,
+            y0: y,
+            up: Some(u),
+            right: Some(r),
+        }
+    }
 }
