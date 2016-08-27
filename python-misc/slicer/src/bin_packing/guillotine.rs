@@ -33,6 +33,20 @@ impl GuillotineNode {
 //        }
 //    }
     
+    pub fn width(&self) -> f64 {
+        match self.right {
+            Some(ref right_node) => self.width - right_node.width,
+            None => self.width,
+        }
+    }
+
+    pub fn height(&self) -> f64 {
+        match self.up {
+            Some(ref top_node) => self.height - top_node.height,
+            None => self.height,
+        }
+    }
+
     pub fn find_free_node(&self, width: f64, height: f64) ->
         Option<&Box<GuillotineNode>> {
             None        
@@ -57,18 +71,29 @@ impl GuillotineNode {
          */
 		// sanity check the invariant that this node should be empty
         match root.up {
-            Some(_) => return None,
+            Some(_) => panic!("Cannot allocate an already full node"),
             None => {},
         }
         match root.right {
-            Some(_) => return None,
+            Some(_) => panic!("Cannot allocate an already full node"),
             None => {},
         }
-        if(1==1) {
-
+        // sanity check that there is enough room to allocate space
+        let right_margin = root.width - box_width;
+        let top_margin = root.height - box_height;
+        if right_margin <= 0.0 || top_margin <= 0.0 {
+            return None;
         }
 
-        print!("{:?}\n", root.up);
+        root.up = Some(Box::new(GuillotineNode::new(root.x0,
+                                               root.y0 + box_height,
+                                               root.width,
+                                               top_margin)));
+        root.right = Some(Box::new(GuillotineNode::new(root.x0 + box_width,
+                                                   root.y0,
+                                                   right_margin,
+                                                   box_height)));
+        root.used = true;
 		Some(root)
     }
 }
