@@ -21,3 +21,7 @@ path = "src/3.rs"
 name = "4-sol"
 path = "src/4.rs"
 
+[[bin]]
+name = "5-sol"
+path = "src/5.rs"
+
