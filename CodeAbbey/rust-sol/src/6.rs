@@ -1,0 +1,31 @@
+fn main() {
+    let stdin = std::io::stdin();
+    let mut buffer = String::new();
+    stdin.read_line(&mut buffer).unwrap();
+    // assumes that a single number is alone on the first line
+    let n_pairs: u64 = buffer.trim().parse::<u64>().ok().unwrap();
+    
+    let mut result: Vec<i64> = Vec::<i64>::new();
+    result.reserve(n_pairs as usize);
+
+    for _ in 0..n_pairs {
+        buffer.clear();
+        stdin.read_line(&mut buffer).unwrap();
+        // it would be more efficient to just parse stream the list  of values
+        // on the line into fold, however we want to check the assumptions
+        // that there are only two whitespace separated values per line
+        let pair: Vec<i64> = buffer.split_whitespace()
+                        .filter_map(|x| x.trim().parse::<i64>().ok())
+                        .collect();
+        assert_eq!(2 as usize, pair.len());
+        let a = pair[0];
+        let b = pair[1];
+        let mut c = a as f64 / b as f64;
+        c += if c < 0.0 { -0.5 } else { 0.5 };
+        result.push(c as i64);
+    }
+    for val in result {
+        print!("{} ", val);
+    }
+    print!("\n");
+}
