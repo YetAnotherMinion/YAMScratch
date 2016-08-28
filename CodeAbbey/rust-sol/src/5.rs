@@ -1,3 +1,5 @@
+mod util;
+
 fn main() {
     let stdin = std::io::stdin();
     let mut buffer = String::new();
@@ -18,16 +20,7 @@ fn main() {
                         .filter_map(|x| x.trim().parse::<i64>().ok())
                         .collect();
         assert_eq!(3 as usize, pair.len());
-        fn min_three<T>(a: T, mut b: T, mut c: T) -> T where T: PartialOrd {
-            if a < b {
-                b = a;
-            }
-            if b < c {
-                c = b
-            }
-            c
-        }
-        result.push(min_three(pair[0], pair[1], pair[2]))
+        result.push(util::min_three(pair[0], pair[1], pair[2]))
     }
     for val in result {
         print!("{} ", val);
