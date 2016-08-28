@@ -29,6 +29,9 @@ path = "src/5.rs"
 name = "6-sol"
 path = "src/6.rs"
 
+[[bin]]
+name = "7-sol"
+path = "src/7.rs"
 
 [[bin]]
 name = "8-sol"
