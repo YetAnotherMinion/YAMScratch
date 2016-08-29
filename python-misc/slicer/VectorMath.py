@@ -2,7 +2,7 @@
 """
 Created on Fri Jun 27 10:42:40 2014
 
-@author: Isaiah Bell
+@author: YetAnotherMinion
 """
 import math
 
@@ -18,7 +18,7 @@ class Quaternion(object):
        
     @classmethod
     def inverse(cls,quat):
-        # find the conjugate and divde by magnitude
+        # find the conjugate and divide by magnitude
         n = magnitude(quat)
         quat = list(quat) # cats to list so we can modify terms
         quat[0] =  quat[0]/n        
