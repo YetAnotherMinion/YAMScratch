@@ -1,6 +1,7 @@
 use ::std::ops::{Mul};
 use ::std::num;
 
+
 trait Vector {
     fn len() -> usize;
 }
@@ -28,9 +29,15 @@ struct Quaternion {
     k: f64,
 }
 
-macro_rules! magnitude {
+macro_rules! quaterion_magnitude {
     ( $x:expr ) => {
-        ($x.real + $x.i + $x.j + $x.k).sqrt()
+        ($x.real.powi(2) + $x.i.powi(2) + $x.j.powi(2) + $x.k.powi(2)).sqrt()
+    }
+}
+
+macro_rules! vec_magnitude {
+    ( $x:expr ) => {
+        x.elements.fold(0.0, |acc, x| acc + x.powi(2)).sqrt()
     }
 }
 
@@ -44,15 +51,17 @@ impl Quaternion {
         }
     }
 
-
     fn inverse(self) -> Quaternion {
         // find the conjugate and divide by magnitude
-        let mag = magnitude!(self);
+        let mag = quaterion_magnitude!(self);
         Quaternion {
-            real: self.real / mag,
-            i: -self.i / mag,
-            j: -self.j / mag,
-            k: -self.k / mag,
+            // the compiler should be smart enough to choose the best method
+            // for computing the reciporical, however use the special method
+            // I found in the language docs on the off chance that it is better
+            real: self.real * mag.recip(),
+            i: -self.i * mag.recip(),
+            j: -self.j * mag.recip(),
+            k: -self.k * mag.recip(),
         }
     }
 }
