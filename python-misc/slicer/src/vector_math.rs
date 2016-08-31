@@ -6,6 +6,18 @@ trait Vector {
     fn len() -> usize;
 }
 
+macro_rules! vec_magnitude {
+    ( $x:expr ) => {
+        $x.elements.into_iter().fold(0.0, |acc, &x| acc + x.powi(2)).sqrt()
+    }
+}
+
+
+trait CrossProduct {
+    fn cross_product<T: Vector>(A: T, B: T) -> Option<T>;
+    // fn is_orthagnal<T: Vector>(Self, rhs: T) -> bool;
+}
+
 struct Vec3 {
     elements: [f64; 3],
 }
@@ -22,69 +34,88 @@ impl Vector for Vec3 {
     fn len() -> usize { 3 }
 }
 
-struct Quaternion {
-    real: f64,
-    i: f64,
-    j: f64,
-    k: f64,
+
+pub enum FourDimensions {
+    Vec4,
+    Quaternion,
 }
 
-macro_rules! quaterion_magnitude {
-    ( $x:expr ) => {
-        ($x.real.powi(2) + $x.i.powi(2) + $x.j.powi(2) + $x.k.powi(2)).sqrt()
+
+
+pub struct Vec4 {
+    elements: [f64; 4],
+}
+
+impl Vec4 {
+    fn new(a: f64, b: f64, c: f64, d: f64) -> Vec4 {
+        Vec4 {
+            elements: [a, b, c, d]
+        }
     }
 }
 
-macro_rules! vec_magnitude {
-    ( $x:expr ) => {
-        x.elements.fold(0.0, |acc, x| acc + x.powi(2)).sqrt()
-    }
+impl Vector for Vec4 {
+    fn len() -> usize { 4 }
+}
+
+pub struct Quaternion {
+    elements: [f64; 4],
 }
 
 impl Quaternion {
-    fn new(real: f64, i: f64, j: f64, k: f64) -> Quaternion {
-        Quaternion {
-            real: real,
-            i: i,
-            j: j,
-            k: k,
-        }
+    fn real(&self) -> f64 {
+        self.elements[0]
     }
 
-    fn inverse(self) -> Quaternion {
+    fn i(&self) -> f64 {
+        self.elements[1]
+    }
+
+    fn j(&self) -> f64 {
+        self.elements[2]
+    }
+
+    fn k(&self) -> f64 {
+        self.elements[3]
+    }
+
+    fn inverse(self) -> Vec4 {
         // find the conjugate and divide by magnitude
-        let mag = quaterion_magnitude!(self);
-        Quaternion {
+        let mag = vec_magnitude!(self);
+        Vec4 {
             // the compiler should be smart enough to choose the best method
             // for computing the reciporical, however use the special method
             // I found in the language docs on the off chance that it is better
-            real: self.real * mag.recip(),
-            i: -self.i * mag.recip(),
-            j: -self.j * mag.recip(),
-            k: -self.k * mag.recip(),
+            elements: [ self.elements[0] * mag.recip(),
+                       -self.elements[1] * mag.recip(),
+                       -self.elements[2] * mag.recip(),
+                       -self.elements[3] * mag.recip()]
         }
     }
 }
 
-impl Vector for Quaternion {
-    fn len() -> usize { 4 }
-}
 
 impl Mul for Quaternion {
     type Output = Quaternion;
 
     fn mul(self, rhs: Quaternion) -> Quaternion {
+        let a = self.elements[0];
+        let b = self.elements[1];
+        let c = self.elements[2];
+        let d = self.elements[3];
+        let w = rhs.elements[0];
+        let x = rhs.elements[1];
+        let y = rhs.elements[2];
+        let z = rhs.elements[3];
+
+        let real =  (a * w) - (b * x) - (c * y) - (d * z);
+        let i =     (b * w) + (a * x) - (d * y) + (c * z); 
+        let j =     (c * w) + (d * x) + (a * y) - (b * z);
+        let k =     (d * w) - (c * x) + (b * y) + (a * z);
+        
         Quaternion {
-            real: (self.real * rhs.real) - (self.i * rhs.i) - (self.j * rhs.j)
-                    - (self.k * rhs.k),
-            i: (self.i * rhs.real) + (self.real * rhs.i) - (self.k * rhs.j)
-                    + (self.j * rhs.k),
-            j: (self.j * rhs.real) + (self.k * rhs.i) + (self.real * rhs.j)
-                    - (self.i * rhs.k),
-            k: (self.k * rhs.real) - (self.j * rhs.i) + (self.i * rhs.j)
-                    + (self.real * rhs.k),
+           elements: [real, i, j, k],
         }
     }
 }
-
 
