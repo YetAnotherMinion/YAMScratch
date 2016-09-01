@@ -1,73 +1,16 @@
-use ::std::ops::{Mul};
-use ::std::num;
+use super::traits::Vector;
+
+use ::std::ops::{Add, Sub, Mul};
 
 #[allow(dead_code)]
-trait Vector {
-    fn len() -> usize;
+pub struct Quaternion {
+    elements: [f64; 4],
 }
 
 macro_rules! vec_magnitude {
     ( $x:expr ) => {
         $x.elements.into_iter().fold(0.0, |acc, &x| acc + x.powi(2)).sqrt()
     }
-}
-
-#[allow(dead_code)]
-trait CrossProduct {
-    fn cross_product<T: Vector>(A: T, B: T) -> Option<T>;
-    // fn is_orthagnal<T: Vector>(Self, rhs: T) -> bool;
-}
-
-#[allow(dead_code)]
-struct Vec3 {
-    elements: [f64; 3],
-}
-
-#[allow(dead_code)]
-impl Vec3 {
-    fn new(i: f64, j: f64, k: f64) -> Vec3 {
-        Vec3 {
-            elements: [i, j, k],
-        }
-    }
-}
-
-#[allow(dead_code)]
-impl Vector for Vec3 {
-    fn len() -> usize { 3 }
-}
-
-
-#[allow(dead_code)]
-pub enum FourDimensions {
-    Vec4,
-    Quaternion,
-}
-
-
-
-#[allow(dead_code)]
-pub struct Vec4 {
-    elements: [f64; 4],
-}
-
-#[allow(dead_code)]
-impl Vec4 {
-    fn new(a: f64, b: f64, c: f64, d: f64) -> Vec4 {
-        Vec4 {
-            elements: [a, b, c, d]
-        }
-    }
-}
-
-#[allow(dead_code)]
-impl Vector for Vec4 {
-    fn len() -> usize { 4 }
-}
-
-#[allow(dead_code)]
-pub struct Quaternion {
-    elements: [f64; 4],
 }
 
 #[allow(dead_code)]
@@ -78,26 +21,26 @@ impl Quaternion {
         }
     }
 
-    fn real(&self) -> f64 {
+    pub fn real(&self) -> f64 {
         self.elements[0]
     }
 
-    fn i(&self) -> f64 {
+    pub fn i(&self) -> f64 {
         self.elements[1]
     }
 
-    fn j(&self) -> f64 {
+    pub fn j(&self) -> f64 {
         self.elements[2]
     }
 
-    fn k(&self) -> f64 {
+    pub fn k(&self) -> f64 {
         self.elements[3]
     }
 
-    fn inverse(self) -> Vec4 {
+    pub fn inverse(self) -> Quaternion {
         // find the conjugate and divide by magnitude
         let mag = vec_magnitude!(self);
-        Vec4 {
+        Quaternion {
             // the compiler should be smart enough to choose the best method
             // for computing the reciporical, however use the special method
             // I found in the language docs on the off chance that it is better

@@ -4,4 +4,4 @@ mod tests {
     fn it_works() {
     }
 }
-pub mod vector_math;
+pub mod linear_algebra;

@@ -1,8 +1,8 @@
 mod bin_packing;
-mod vector_math;
+mod linear_algebra;
 
 use bin_packing::GuillotineNode as G;
-use vector_math::{Quaternion, Vec4};
+use linear_algebra::vector::{Quaternion, Vec4};
 
 pub fn main() {
 //    let mut b = Node::new();
