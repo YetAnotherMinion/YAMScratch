@@ -1,7 +1,7 @@
 use ::std::ops::{Mul};
 use ::std::num;
 
-
+#[allow(dead_code)]
 trait Vector {
     fn len() -> usize;
 }
@@ -12,16 +12,18 @@ macro_rules! vec_magnitude {
     }
 }
 
-
+#[allow(dead_code)]
 trait CrossProduct {
     fn cross_product<T: Vector>(A: T, B: T) -> Option<T>;
     // fn is_orthagnal<T: Vector>(Self, rhs: T) -> bool;
 }
 
+#[allow(dead_code)]
 struct Vec3 {
     elements: [f64; 3],
 }
 
+#[allow(dead_code)]
 impl Vec3 {
     fn new(i: f64, j: f64, k: f64) -> Vec3 {
         Vec3 {
@@ -30,11 +32,13 @@ impl Vec3 {
     }
 }
 
+#[allow(dead_code)]
 impl Vector for Vec3 {
     fn len() -> usize { 3 }
 }
 
 
+#[allow(dead_code)]
 pub enum FourDimensions {
     Vec4,
     Quaternion,
@@ -42,10 +46,12 @@ pub enum FourDimensions {
 
 
 
+#[allow(dead_code)]
 pub struct Vec4 {
     elements: [f64; 4],
 }
 
+#[allow(dead_code)]
 impl Vec4 {
     fn new(a: f64, b: f64, c: f64, d: f64) -> Vec4 {
         Vec4 {
@@ -54,15 +60,24 @@ impl Vec4 {
     }
 }
 
+#[allow(dead_code)]
 impl Vector for Vec4 {
     fn len() -> usize { 4 }
 }
 
+#[allow(dead_code)]
 pub struct Quaternion {
     elements: [f64; 4],
 }
 
+#[allow(dead_code)]
 impl Quaternion {
+    pub fn new(real: f64, i: f64, j: f64, k: f64) -> Quaternion {
+        Quaternion {
+            elements: [real, i, j, k],
+        }
+    }
+
     fn real(&self) -> f64 {
         self.elements[0]
     }
@@ -94,7 +109,7 @@ impl Quaternion {
     }
 }
 
-
+#[allow(dead_code)]
 impl Mul for Quaternion {
     type Output = Quaternion;
 

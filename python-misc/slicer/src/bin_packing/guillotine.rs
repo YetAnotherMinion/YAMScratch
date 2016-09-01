@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct GuillotineNode {
     width: f64,
@@ -9,6 +10,7 @@ pub struct GuillotineNode {
     right: Option<Box<GuillotineNode>>,
 }
 
+#[allow(dead_code)]
 impl GuillotineNode {
     pub fn new(x0: f64, y0: f64, width: f64, height: f64) -> GuillotineNode {
         GuillotineNode {
