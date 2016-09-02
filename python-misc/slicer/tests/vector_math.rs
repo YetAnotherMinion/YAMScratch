@@ -1,6 +1,8 @@
 extern crate slicer;
 
-use slicer::vector_math::{Vec4, Quaternion};
+use slicer::linear_algebra::vector::{Vec4, Quaternion};
+use slicer::linear_algebra::vector::FourDimensions;
+
 
 #[test]
 fn test_quaternion_inverse() {

@@ -1,8 +1,10 @@
 use super::traits::Vector;
 
 use ::std::ops::{Add, Sub, Mul};
+use ::std::cmp::PartialEq;
 
 #[allow(dead_code)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Quaternion {
     elements: [f64; 4],
 }
@@ -76,4 +78,5 @@ impl Mul for Quaternion {
         }
     }
 }
+
 

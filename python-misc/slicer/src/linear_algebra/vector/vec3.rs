@@ -1,6 +1,7 @@
 use super::traits::Vector;
 
 #[allow(dead_code)]
+#[derive(Debug, Clone)]
 pub struct Vec3 {
     elements: [f64; 3],
 }
