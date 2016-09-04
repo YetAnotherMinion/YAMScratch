@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <limits>
 #include <cassert>
 #include <vector>
@@ -22,6 +23,22 @@ void print_edges(std::vector<Node<>>& nodes) {
         }
     }
     std::cout << std::endl;
+}
+
+void print_board(std::vector<std::vector<int64_t>> board) {
+    const auto INFINITY = std::numeric_limits<int64_t>::min();
+    for(auto& row : board) {
+        for(auto& val : row) {
+            if(val == INFINITY) {
+                std::cout << std::setw(3) << "I";
+            } else {
+                std::cout << std::setw(3) << val;
+            }
+
+        }
+        std::cout << std::endl;
+    }
+
 }
 
 int main() {
@@ -57,17 +74,25 @@ int main() {
             dist[node.self_index][edge.first] = edge.second;
         }
     }
-    for(uint64_t k = 1; k < N; ++k) {
-        for(uint64_t i = 1; i < N; ++i) {
-            for(uint64_t j = 1; j < N; ++j) {
+    print_board(dist);
+    // return 0;
+    for(uint64_t k = 0; k < N; ++k) {
+        for(uint64_t i = 0; i < N; ++i) {
+            for(uint64_t j = 0; j < N; ++j) {
                 // check that each leg of the purposed shorter path exists
                 if ((dist[i][k] == INFINITY) || (dist[k][j] == INFINITY)) {
                     std::cout << "skipping" << std::endl;
                     continue;
                 }
+                // not a new path
+                if(i == k || j == k) {
+                    std::cout << "not a new path" << std::endl;
+                    continue;
+                }
                 auto candiate_path = dist[i][k] + dist[k][j];
                 std::cout << "candiate " << i << " -> " << j << " = "
-                    << candiate_path << std::endl;
+                    << candiate_path << " using " << i << " -> " << k << " -> "
+                    << j << std::endl;
                 if (INFINITY == dist[i][j] ||
                         dist[i][j] > candiate_path) {
                     std::cout << "Setting dist[" << i << "][" << j << "] = "
