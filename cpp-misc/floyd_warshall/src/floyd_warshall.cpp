@@ -12,6 +12,17 @@ struct Node {
     Key self_index;
 };
 
+void print_edges(std::vector<Node<>>& nodes) {
+    for(auto& rv: nodes) {
+        std::cout << rv.self_index << "\n";
+        for(auto& edge : rv.edges) {
+            std::cout << "\t" << rv.self_index << " -> " << edge.first
+                << ": " << edge.second << "\n";
+        }
+    }
+    std::cout << std::endl;
+}
+
 int main() {
     // relabel all the nodes from 0 to N-1
     uint64_t M, N;
@@ -30,13 +41,7 @@ int main() {
         // edges are directed from x->y
         nodes[x-1].edges[y-1] = w;
     }
-    for(auto& rv: nodes) {
-        std::cout << rv.self_index << "\n";
-        for(auto& edge : rv.edges) {
-            std::cout << "\t" << rv.self_index << " -> " << edge.first
-                << ": " << edge.second << "\n";
-        }
-    }
-    std::cout << std::endl;
+
+    print_edges(nodes);
     return 0;
 }
