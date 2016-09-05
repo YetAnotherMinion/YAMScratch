@@ -1,7 +1,9 @@
 mod util;
 
 use std::cmp::PartialOrd;
+use std::fmt::Display;
 
+#[derive(Debug)]
 pub struct BinaryNode<T> {
     value: T,
     left: Option<Box<BinaryNode<T>>>,
@@ -10,7 +12,7 @@ pub struct BinaryNode<T> {
 
 fn moving<T>(v: T) -> T { v }
 
-impl<T: PartialOrd> BinaryNode<T> {
+impl<T: PartialOrd + Display> BinaryNode<T> {
     pub fn new(val: T) -> BinaryNode<T> {
         BinaryNode::<T> {
             value: val,
@@ -46,7 +48,37 @@ impl<T: PartialOrd> BinaryNode<T> {
             }
         } 
     }
+
+    pub fn to_string(&self) -> String {
+        let mut result: String = "(".to_string();
+        let left_content = match self.left {
+            Some(ref x) => x.to_string(),
+            None => "-".to_string(),
+        };
+        result.push_str(&*left_content);
+        result.push_str(",");
+        result.push_str(&*self.value.to_string());
+        result.push_str(",");
+        let right_content = match self.right {
+            Some(ref x) => x.to_string(),
+            None => "-".to_string(),
+        };
+        result.push_str(&*right_content);
+        result.push_str(")");
+        result
+    }
 }
+
+
+//impl<T: std::fmt::Display> std::fmt::Display for BinaryNode<T> {
+//    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+//        write!(f, "{}", "(");
+//        match self.left {
+//            Some(ref x) => write!(f, "{}", x),
+//            None => write!(f, "{}", "-"),
+//        }
+//    }
+//}
 
 fn main() {
     let stdin = std::io::stdin();
@@ -66,6 +98,5 @@ fn main() {
     for val in iter {
         BinaryNode::<i64>::insert(&mut root, val);
     }
-
-    print!("\n");
+    println!("{}", root.to_string());
 }
