@@ -1,26 +1,28 @@
-use std::ops::AddAssign;
-
-struct ArithmeticProgression<T> {
-    step: T,
-    value: T,
+struct CompoundInterest {
+    principal: i64, // stored as cents
+    rate: i64, // as percent
 }
 
-impl<T> ArithmeticProgression<T> {
-    fn new(intial_value: T, step: T) -> ArithmeticProgression<T> {
-        ArithmeticProgression {
-            step: step,
-            value: intial_value,
+impl CompoundInterest {
+    pub fn new(principal: i64, rate: i64) -> CompoundInterest {
+        CompoundInterest {
+            principal: principal * 100,
+            rate: rate,
         }
     }
 }
 
-impl<T: AddAssign + Clone> Iterator for ArithmeticProgression<T> {
-    type Item = T;
+impl Iterator for CompoundInterest {
+    type Item = i64;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let result = self.value.clone();
-        self.value += self.step.clone();
-        Some(result)
+        let mut tmp: f64 = (self.principal * self.rate) as f64 / 100.0;
+        tmp += self.principal as f64;
+        tmp = tmp.floor();
+        self.principal = tmp as i64;
+        // convert back to dollars
+        tmp /= 100.0;
+        return Some(tmp as i64);
     }
 }
 
@@ -44,10 +46,15 @@ fn main() {
                         .filter_map(|x| x.trim().parse::<i64>().ok())
                         .collect();
         assert_eq!(3 as usize, parameters.len());
-        let iter = ArithmeticProgression::new(parameters[0], parameters[1]);
-        
-        result.push(iter.take(parameters[2] as usize)
-                        .fold(0, |acc, x| acc + x));
+
+        let mut iter = CompoundInterest::new(parameters[0], parameters[2]);
+        let mut periods = 0;
+        while iter.next().unwrap() < parameters[1] {
+            periods += 1;
+        }
+        // account for the off by one error from not using do while
+        periods += 1;
+        result.push(periods);
     }
     for val in result {
         print!("{} ", val);
