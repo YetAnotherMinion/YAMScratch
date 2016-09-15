@@ -1,4 +1,6 @@
 #include <vector>
+#include <algorithm>
+#include <limits>
 #include <iostream>
 #include <cstdint>
 #include <map>
@@ -10,13 +12,19 @@ struct Node {
     uint32_t distance;
 };
 
-void convert_maze_to_graph(std::vector<std::vector<uint8_t>> &maze,
-                      std::vector<Node> &graph,
-                      std::vector<uint32_t> &checkpoints)
+/* returns the graph index of the start and stop of the maze */
+std::pair<uint32_t, uint32_t> convert_maze_to_graph(
+        const std::vector<std::vector<uint8_t>> &maze,
+        const uint32_t x0, /* start of maze */
+        const uint32_t y0,
+        const uint32_t x1, /* endpoint of maze */
+        const uint32_t y1,
+        std::vector<Node> &graph,
+        std::vector<uint32_t> &checkpoints)
 {
     graph.clear();
     checkpoints.clear();
-
+    std::pair<uint32_t, uint32_t> result;
     std::map<uint32_t, uint32_t> maze_to_graph;    
     const uint8_t WALL = '1';
     const uint8_t SPACE = '0';
@@ -26,8 +34,24 @@ void convert_maze_to_graph(std::vector<std::vector<uint8_t>> &maze,
     for(const auto& row : maze) {
         jj = 0;
         for(const auto cell : row) {
+            if (ii == x0 && jj == y0) {
+                if(cell != SPACE && cell != CHECKPOINT) {
+                    std::cerr << "Starting point is not valid maze position"
+                        << std::endl;
+                    exit(2);
+                }
+                result.first = graph.size();
+            }
+            if (ii == x1 && jj == y1) {
+                if(cell != SPACE && cell != CHECKPOINT) {
+                    std::cerr << "Ending point is not valid maze position"
+                        << std::endl;
+                    exit(2);
+                }
+                result.second = graph.size();
+            }
             if ((SPACE == cell) || (CHECKPOINT == cell)) {
-                uint32_t graph_index = graph.size();
+                uint32_t graph_index = maze_to_graph.size();
                 /* save the current nodes mapping from maze coordinates into
                  * graph coordinates */
                 maze_to_graph[maze_index] = graph_index;
@@ -68,6 +92,17 @@ void convert_maze_to_graph(std::vector<std::vector<uint8_t>> &maze,
         }
         ++ii;
     }
+    return result;
+}
+
+void print_graph(std::vector<Node> &graph) {
+    for(const auto& node : graph) {
+        std::cout << "edges: ";
+        for(auto edge : node.edges) {
+            std::cout << edge << ", ";
+        }
+        std::cout << std::endl;
+    }
 }
 
 int main() {
@@ -85,12 +120,49 @@ int main() {
     std::vector<Node> graph;
     std::vector<uint32_t> checkpoints;
 
-    convert_maze_to_graph(maze, graph, checkpoints);
-    for(const auto& node : graph) {
-        std::cout << "edges: ";
-        for(auto edge : node.edges) {
-            std::cout << edge << ", ";
+    auto exits = convert_maze_to_graph(maze, 0, 0, x, y, graph, checkpoints);
+    
+    const uint32_t N = graph.size();
+    const uint64_t MY_INFINITY = std::numeric_limits<uint64_t>::max();
+    std::vector<std::vector<uint64_t>> dist(
+            N,
+            std::vector<uint64_t>(N, MY_INFINITY));
+    /* intialize floyd-warshall adjacency matrix */
+    for(uint32_t ii = 0; ii < N; ++ii) {
+        dist[ii][ii] = 0;
+        for(uint32_t jj : graph[ii].edges) {
+            /* constant distance to travel between adjacent open maze cells */
+            dist[ii][jj] = 1;
         }
-        std::cout << std::endl;
     }
+    /* generate the distance graph for the entire maze graph */
+    for(uint32_t kk = 0; kk < N; ++kk) {
+        for(uint32_t jj = 0; jj < N; ++jj) {
+            for(uint32_t ii = 0; ii < N; ++ii) {
+                if (dist[ii][kk] == MY_INFINITY || dist[kk][jj] == MY_INFINITY) {
+                    continue;
+                }
+                const auto candiate_dist = dist[ii][kk] + dist[kk][jj];
+                if (candiate_dist < dist[ii][jj]) {
+                    dist[ii][jj] = candiate_dist;
+                    dist[jj][ii] = candiate_dist;
+                }
+            }
+        }
+    }
+    /* determine the size of the reduced graph, check if any checkpoints are
+     * at the start or end of the maze */
+    uint32_t M = checkpoints.size() + 2;
+    if (std::find(checkpoints.begin(), checkpoints.end(), exits.first) != \
+            checkpoints.end()) {
+        --M; /* deduct the overlap */
+    }
+    if (std::find(checkpoints.begin(), checkpoints.end(),exits.second) != \
+            checkpoints.end()) {
+        --M; /* deduct the overlap */
+    }
+    std::vector<std::vector<uint64_t>> reduced_graph(
+            M,
+            std::vector<uint64_t>(M, MY_INFINITY)); 
+    
 }
