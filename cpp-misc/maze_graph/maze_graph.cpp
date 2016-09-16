@@ -153,16 +153,30 @@ int main() {
     /* determine the size of the reduced graph, check if any checkpoints are
      * at the start or end of the maze */
     uint32_t M = checkpoints.size() + 2;
-    if (std::find(checkpoints.begin(), checkpoints.end(), exits.first) != \
-            checkpoints.end()) {
+    auto tmp_it = std::find(checkpoints.begin(), checkpoints.end(), exits.first);
+    if (tmp_it != checkpoints.end()) {
         --M; /* deduct the overlap */
+        checkpoints.erase(tmp_it);
     }
-    if (std::find(checkpoints.begin(), checkpoints.end(),exits.second) != \
-            checkpoints.end()) {
+    tmp_it =std::find(checkpoints.begin(), checkpoints.end(), exits.second); 
+    if (tmp_it != checkpoints.end()) {
         --M; /* deduct the overlap */
+        checkpoints.erase(tmp_it);
     }
-    std::vector<std::vector<uint64_t>> reduced_graph(
+    std::vector<std::vector<uint64_t>> reduced_dist(
             M,
             std::vector<uint64_t>(M, MY_INFINITY)); 
-    
+    /* create a shortest path matrix for only the checkpoints, start, and stop
+     * nodes */
+    reduced_dist[0][0] = 0;
+    reduced_dist[M-1][M-1] = 0;
+    reduced_dist[M-1][0] = dist[exits.second][exits.first];
+    reduced_dist[0][M-1] = dist[exits.first][exits.second];
+    for(uint32_t ii = 0; ii < M; ++ii) {
+        reduced_dist[0][ii] = dist[exits.first][checkpoints[ii]];
+        reduced_dist[ii][0] = dist[checkpoints[ii]][exits.first];
+        reduced_dist[M-1][ii] = dist[exits.second][checkpoints[ii]];
+        reduced_dist[ii][M-1] = dist[checkpoints[ii]][exits.second];
+    }
+
 }
