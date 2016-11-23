@@ -84,5 +84,10 @@ $(LDIR)/gtest_main.a : $(OBJ)/gtest-all.o $(OBJ)/gtest_main.o
 $(BIN)/1.out : $(SRC)/1.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@
 
+65 : $(BIN)/65.out
+
+$(BIN)/65.out : $(SRC)/65.cpp
+	$(CXX) $(CXXFLAGS) $< -o $@
+
 clean :
 	rm -vf $(TESTS) $(LDIR)/gtest.a $(LDIR)/gtest_main.a $(OBJ)/*.o $(BIN)/*
