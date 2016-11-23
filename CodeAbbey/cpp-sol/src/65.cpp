@@ -1,9 +1,25 @@
 #include <string>
 #include <iostream>
 #include <cstdint>
-#include <algorithm>
 #include <vector>
 #include <unordered_map>
+
+/* CodeAbbey specifies its own infinite distance value */
+const uint64_t INFINITE_DISTANCE = 10000000;
+
+void print_matrix(std::vector<std::vector<uint64_t>>& matrix) {
+    for (auto& row : matrix) {
+        for (auto val : row) {
+            if (val == INFINITE_DISTANCE) {
+               std::cout << '#';
+            } else {
+                std::cout << val;
+            }
+            std::cout << ' ';
+        }
+        std::cout << std::endl;
+    }
+}
 
 int main(int argc, char* argv[]) {
     uint64_t n_routes;
@@ -27,13 +43,24 @@ int main(int argc, char* argv[]) {
         if (towns.size() != prev_size) {
             index++;
         }
-        roads.push_back(std::make_pair(towns[A], towns[B]));
+        roads.push_back(std::make_pair(towns.at(A), towns.at(B)));
     }
+    uint64_t n_trips;
+    std::cin >> n_trips;
+    std::vector<std::pair<uint64_t, uint64_t>> trip_queries;
+    for (uint64_t ii = 0; ii < n_trips; ++ii) {
+        std::string A, B;
+        char seperator;
+        std::cin >> A >> seperator >> B;
+        /* Program will crash with unhandled exception if trip endpoints were
+         * not part of the road network loaded earlier */
+        trip_queries.push_back(std::make_pair(towns.at(A), towns.at(B)));
+    }
+
 
     std::vector<std::vector<uint64_t>> matrix(
             towns.size(),
-            std::vector<uint64_t>(towns.size(),
-                                  std::numeric_limits<uint64_t>::max())
+            std::vector<uint64_t>(towns.size(), INFINITE_DISTANCE)
             );
     
     for (auto& road : roads) {
@@ -43,22 +70,27 @@ int main(int argc, char* argv[]) {
     for (uint64_t ii = 0; ii < towns.size(); ++ii) {
         matrix[ii][ii] = 0;
     }
-    const auto INFINITE_DISTANCE = std::numeric_limits<uint64_t>::max();
 
-    for (uint64_t kk= 1; kk < towns.size(); ++kk) {
+    /* for this problem roads are bidirectional so only the lower triangular
+     * part of the matrix is calculated */
+    for (uint64_t kk= 0; kk < towns.size(); ++kk) {
         for (uint64_t jj = 0; jj < towns.size(); ++jj) {
             for (uint64_t ii = 0; ii < jj; ++ii) {
                 if ((matrix[ii][kk] == INFINITE_DISTANCE) ||
                         (matrix[kk][jj] == INFINITE_DISTANCE)) {
                     continue;
                 }
-                auto candidate = matrix[ii][kk] = matrix[kk][jj];
+                auto candidate = matrix[ii][kk] + matrix[kk][jj];
                 if (candidate < matrix[ii][jj]) {
-                    matrix[ii][jj] = matrix[jj][ii] = candidate;
+                    matrix[ii][jj] = candidate;
+                    matrix[jj][ii] = candidate;
                 }
             }
         }
     }
 
-    // print the matrix
+    for (auto& trip : trip_queries) {
+        std::cout << matrix[trip.first][trip.second] << ' ';
+    }
+    std::cout << std::endl;
 }
