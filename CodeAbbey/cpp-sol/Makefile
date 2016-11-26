@@ -89,5 +89,10 @@ $(BIN)/1.out : $(SRC)/1.cpp
 $(BIN)/65.out : $(SRC)/65.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@
 
+79 : $(BIN)/79.out
+
+$(BIN)/79.out : $(SRC)/79.cpp
+	$(CXX) $(CXXFLAGS) $< -o $@
+
 clean :
 	rm -vf $(TESTS) $(LDIR)/gtest.a $(LDIR)/gtest_main.a $(OBJ)/*.o $(BIN)/*
