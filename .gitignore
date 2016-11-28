@@ -16,6 +16,7 @@ config.mk
 
 bin/
 lib/
+3rd/
 motivator/Matlab/
 Data\ Structures/
 c-misc/DS\ projects/*.txt

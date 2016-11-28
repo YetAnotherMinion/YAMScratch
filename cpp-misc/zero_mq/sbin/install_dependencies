@@ -1,0 +1,28 @@
+#! /bin/bash
+
+set -eux
+
+project_dir=$(pwd)
+
+zero_mq_dir=${project_dir}/3rd/libzmq
+
+if test -f config.sh; then
+    source config.sh
+fi
+
+if test -z "${zero_mq_url}"; then
+    zero_mq_url="https://github.com/zeromq/libzmq"
+fi
+
+if ! test -d ${zero_mq_dir}; then
+    git clone ${zero_mq_url} ${zero_mq_dir}
+fi
+
+cd ${zero_mq_dir}
+git checkout v4.2.0
+
+./autogen.sh
+
+./configure --prefix="${project_dir}/3rd"
+
+
