@@ -85,3 +85,5 @@ CodeAbbey/rust-sol/target/
 rust-swagger-petstore/target/
 python-misc/slicer/target/
 Cargo.lock
+target/
+input.txt
